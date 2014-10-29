@@ -8,25 +8,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 //crea un archivo con el nombre *Argp
 int *
 creararchivo_1_svc(char **argp, struct svc_req *rqstp)
 {
 	static int  result;
 	char * path;
+	path = (char*)malloc (150);
 	strcat (path,"./archivos/");
 	strcat (path,*argp);
+	strcat (path,"-0");
 	FILE *archivo;
 	result=0;
 	//abre un archivo para lectura
 	archivo = fopen(path,"r");
 	//verifica si el archivo abierto no existe
-	if (archivo==null){
-	  fclose(archivo);
+	if (archivo==NULL){
 	  archivo = fopen(path,"w");
 	    //verifica si se creo el archivo
-	    if (archivo!=null)
+	    if (archivo!=NULL)
 	      result=1;
 	}
 	else
@@ -46,7 +46,7 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	FILE *archivo;
 	FILE *archivoNuevo;
 	char caracter;
-	
+	char str[15];
 	strcat(argp->nombre,"-");
 	strcat(call,argp->nombre);
 	strcat(call," > versiones.txt");
@@ -58,7 +58,7 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
  
 	archivo = fopen("versiones.txt","r");
  
-	if (archivo == NULL){
+	if (archivo == NULL)
 		printf("\nError de apertura del archivo del archivo versiones.txt \n\n");
             else{
 	      //busco la ultima version del archivo  
@@ -73,11 +73,11 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 		    pos++;
 	      }
 	    }
-        }
         
         fclose(archivo);
 	
-	char* path,path1;
+	char* path;
+	char* path1;
 	//path para verificar la existe del archivo
 	strcat (path,"./archivos/");
 	strcat(path,nombre);
@@ -91,18 +91,21 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	// el archivo que se va a modificar existe
 	if (archivo!=NULL){
 	  fclose (archivo);
-	  while (*(nombre+pos)!='-'))
+	  while (*(nombre+pos)!='-'){
 		version=version*10+*(nombre+pos)-((int)'0');
+	        pos--;
+	  }
 	  version++;
-	  strcat(path1,(char)(((int)'0')+version));
+	  sprintf(str, "%d", (((int)'0')+version));
+	  strcat(path1,str);
 	  archivoNuevo=fopen (path1,"w");
-	  fprintf(fp,argp->contenido);
+	  fprintf(archivoNuevo,argp->contenido);
 	}
 	//el archivo a modicar no existe y por lo tanto se creara una nueva version
 	else{
-	  strcat(path1,'0');
+	  strcat(path1,"0");
 	  archivoNuevo=fopen (path1,"w");
-	  fprintf(fp,argp->contenido);
+	  fprintf(archivoNuevo,argp->contenido);
 	}
 	close (archivoNuevo);
 	
@@ -116,11 +119,11 @@ tamanoarchivo_1_svc(char **argp, struct svc_req *rqstp)
 
 	FILE* arch; 
 	char *path;
-	strcat (path,"./archivos/")
+	strcat (path,"./archivos/");
 	strcat (path,*argp);
 	arch=fopen(path, "rb"); // abro el archivo de solo lectura.
 	if (arch!=NULL){
-	  fseek(arch, SEEK_END);            // me ubico en el final del archivo.
+	  fseek(arch,0, SEEK_END);            // me ubico en el final del archivo.
 	  result=ftell(arch);                     // obtengo su tamanio en BYTES.
 	  fclose(arch);                               // cierro el archivo.
 	}
@@ -138,13 +141,13 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	FILE* arch; 
 	char caracteres[100];
 	tamanio=0;
-	
+	char str[15];
 	strcat (argp->nombre,"-");
-	strcat (argp->nombre,(char)(((int)'0')+argp->v));
-	
+	sprintf(str, "%d", (((int)'0')+argp->v));
+	strcat(argp->nombre,str);
 	arch=fopen(argp->nombre, "rb"); // abro el archivo de solo lectura.
 	if (arch!=NULL){
-	  fseek(arch, SEEK_END);            // me ubico en el final del archivo.
+	  fseek(arch,0, SEEK_END);            // me ubico en el final del archivo.
 	  tamanio=ftell(arch);                     // obtengo su tamanio en BYTES.
 	  fclose(arch);                               // cierro el archivo.
 	}
@@ -171,13 +174,12 @@ listararchivos_1_svc(void *argp, struct svc_req *rqstp)
 	static char * result;
 	FILE* arch; 
 	char caracteres[100];
-	char* resu;
-	FILE* arch; 
-	
+	char* resu; 
+	int tamanio;
 	system ("ls ./archivos > archivos.txt");
 	
 	arch=fopen("archivos.txt", "rb"); // abro el archivo de solo lectura.
-	fseek(arch, SEEK_END);            // me ubico en el final del archivo.
+	fseek(arch,0,SEEK_END);            // me ubico en el final del archivo.
 	tamanio=ftell(arch);                     // obtengo su tamanio en BYTES.
 	fclose(arch);                               // cierro el archivo.
 	
@@ -189,6 +191,7 @@ listararchivos_1_svc(void *argp, struct svc_req *rqstp)
  	{
  		fgets(caracteres,100,arch);
  		strcat (resu,caracteres);
+		printf("%s",resu);
  	}
 	result=resu;
 	
