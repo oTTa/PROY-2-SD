@@ -83,8 +83,8 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 			  	if (!feof(archivo)){
 			    	*(nombre+pos)=caracter;
 			    	pos++;
-			    }
-			  }
+				}
+			      }
 	    }
 	    fclose(archivo);
 	    pos=strlen(nombre);
@@ -156,8 +156,6 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	char caracteres[100];
 	tamanio=0;
 	char str[15];
-	//free result previo en caso de que exista
-	//xdr_free(xdr_readdir_res, &result);
 	strcat (argp->nombre,"-");
 	sprintf(str, "%d", argp->v);
 	strcat(argp->nombre,str);
@@ -165,7 +163,6 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	*path='\0';
 	strcat(path,"../archivos/");
 	strcat(path,argp->nombre);
-	printf("%s\n",path);
 	arch=fopen(path, "rb"); // abro el archivo de solo lectura.
 	if (arch!=NULL){
 	  fseek(arch,0, SEEK_END);            // me ubico en el final del archivo.
@@ -175,21 +172,14 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	
 	//reservamos espacio para mandar el archivo
 	resu=malloc (sizeof(char)*tamanio);
-	printf("tamanio:%i\n",tamanio);
 	*resu='\0';
 	arch = fopen(path,"r");
-	printf("Caracteres:\n");
 	if (arch!=NULL){
-	  while (feof(arch) == 0)
-	  {
-		  fgets(caracteres,100,arch);
+	  while (fgets(caracteres,100,arch) != NULL)
 		  strcat (resu,caracteres);
-		  printf("%s\n",caracteres);
-	  }
 	}
-	printf("Resu\n");
+	
 	result=resu;
-	printf("%s\n",resu);
 
 	return &result;
 }
@@ -213,11 +203,9 @@ listararchivos_1_svc(void *argp, struct svc_req *rqstp)
 	resu=malloc (sizeof(char)*tamanio+100);
 	*resu='\0';
 	arch = fopen("archivos.txt","r");
-	while (feof(arch) == 0)
+	while (fgets(caracteres,100,arch) != NULL)
  	{
- 		fgets(caracteres,100,arch);
  		strcat (resu,caracteres);
-		//printf("%s",resu);
  	}
 	result=resu;
 	
