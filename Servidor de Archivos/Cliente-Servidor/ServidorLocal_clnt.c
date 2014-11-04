@@ -4,7 +4,7 @@
  */
 
 #include <memory.h> /* for memset */
-#include "ej2.h"
+#include "ServidorLocal.h"
 
 /* Default timeout can be changed using clnt_control() */
 static struct timeval TIMEOUT = { 25, 0 };

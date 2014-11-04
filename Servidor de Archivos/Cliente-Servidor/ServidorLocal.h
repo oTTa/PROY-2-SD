@@ -3,8 +3,8 @@
  * It was generated using rpcgen.
  */
 
-#ifndef _EJ2_H_RPCGEN
-#define _EJ2_H_RPCGEN
+#ifndef _SERVIDORLOCAL_H_RPCGEN
+#define _SERVIDORLOCAL_H_RPCGEN
 
 #include <rpc/rpc.h>
 
@@ -82,4 +82,4 @@ extern bool_t xdr_nombreVersion ();
 }
 #endif
 
-#endif /* !_EJ2_H_RPCGEN */
+#endif /* !_SERVIDORLOCAL_H_RPCGEN */

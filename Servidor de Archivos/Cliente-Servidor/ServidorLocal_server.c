@@ -4,7 +4,7 @@
  * as a guideline for developing your own functions.
  */
 
-#include "ej2.h"
+#include "ServidorLocal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,13 +41,27 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 {
 	static int  result;
 	int pos;
-	char call[100] = "ls ./archivos |grep "; 
-	char nombre [100];
+	char* call; 
+	char* nombre;
 	FILE *archivo;
 	FILE *archivoNuevo;
 	char caracter;
-	char str[15];
+	char* str;
+	char* path;
+	char* path1;
+	path=(char*) malloc (210);
+	path1=(char*) malloc (210);
+	call=(char*) malloc (300);
+	nombre=(char*) malloc (200);
+	str=(char*) malloc (15);
+	*path='\0';
+	*path1='\0';
+	*call='\0';
+	*nombre='\0';
+	*str='\0';
+	
 	strcat(argp->nombre,"-");
+	strcat(call,"ls ./archivos |grep ");
 	strcat(call,argp->nombre);
 	strcat(call," > versiones.txt");
 	
@@ -55,60 +69,59 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	pos=0;
 	//listo las versiones del archivo en versiones.txt
 	system (call);
- 
 	archivo = fopen("versiones.txt","r");
- 
 	if (archivo == NULL)
-		printf("\nError de apertura del archivo del archivo versiones.txt \n\n");
-            else{
+		printf("\nError de apertura del archivo  versiones.txt \n\n");
+    else{
 	      //busco la ultima version del archivo  
-	      while (feof(archivo) == 0)
-	      {
-		  caracter = fgetc(archivo);
-		  if (caracter=='\n')
-			pos=0;
-		  if (!feof(archivo))
-		    nombre[pos]==caracter;
-		  else
-		    pos++;
-	      }
+	    while (feof(archivo) == 0)
+	    {
+	    	  caracter = fgetc(archivo);
+			  if (caracter=='\n')
+			    pos=0;
+			  else {
+			  	if (!feof(archivo)){
+			    	*(nombre+pos)=caracter;
+			    	pos++;
+			    }
+			  }
 	    }
-        
-        fclose(archivo);
-	
-	char* path;
-	char* path1;
-	//path para verificar la existe del archivo
-	strcat (path,"./archivos/");
-	strcat(path,nombre);
-	//archivo a crear
-	strcat (path1,"./archivos/");
-	strcat(path1,argp->nombre);
-	strcat(path1,"-");
-	int  version=0;
-	archivo=fopen (path,"r");
-	
-	// el archivo que se va a modificar existe
-	if (archivo!=NULL){
-	  fclose (archivo);
-	  while (*(nombre+pos)!='-'){
-		version=version*10+*(nombre+pos)-((int)'0');
-	        pos--;
-	  }
-	  version++;
-	  sprintf(str, "%d", (((int)'0')+version));
-	  strcat(path1,str);
-	  archivoNuevo=fopen (path1,"w");
-	  fprintf(archivoNuevo,argp->contenido);
+	    fclose(archivo);
+	    pos=strlen(nombre);
+	    //path para verificar la existe del archivo
+	    strcat (path,"./archivos/");
+	    strcat(path,nombre);
+	    //archivo a crear
+	    strcat (path1,"./archivos/");
+	    strcat(path1,argp->nombre);
+	    int  version=0;
+	    archivo=fopen (path,"r");
+	    // el archivo que se va a modificar existe
+	    if (archivo!=NULL && (*nombre)!='\0'){
+	      fclose (archivo);
+	      while (*(nombre+pos-1)!='-' && pos>=0){
+		    version=version*10+(int)(*(nombre+pos-1)-'0');
+		    pos--;
+	      }
+	      version++;
+	      sprintf(str, "%d",version);
+	      strcat(path1,str);
+	      archivoNuevo=fopen (path1,"w");
+	      fprintf(archivoNuevo,argp->contenido);
+	    }
+	    //el archivo a modicar no existe y por lo tanto se creara una nueva version
+	    else{
+	      strcat(path1,"0");
+	      archivoNuevo=fopen (path1,"w");
+	      fprintf(archivoNuevo,argp->contenido);
+	    }
+	    fclose (archivoNuevo);
 	}
-	//el archivo a modicar no existe y por lo tanto se creara una nueva version
-	else{
-	  strcat(path1,"0");
-	  archivoNuevo=fopen (path1,"w");
-	  fprintf(archivoNuevo,argp->contenido);
-	}
-	close (archivoNuevo);
-	
+	free (path);
+	free (path1);
+	free (call);
+	free (str);
+	free (nombre);
 	return &result;
 }
 
@@ -118,7 +131,7 @@ tamanoarchivo_1_svc(char **argp, struct svc_req *rqstp)
 	static long  result;
 
 	FILE* arch; 
-	char *path;
+	char path[200];
 	strcat (path,"./archivos/");
 	strcat (path,*argp);
 	arch=fopen(path, "rb"); // abro el archivo de solo lectura.
@@ -137,15 +150,23 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 {
 	static char * result;
 	char* resu;
+	char* path;
 	long tamanio;
 	FILE* arch; 
 	char caracteres[100];
 	tamanio=0;
 	char str[15];
+	//free result previo en caso de que exista
+	//xdr_free(xdr_readdir_res, &result);
 	strcat (argp->nombre,"-");
-	sprintf(str, "%d", (((int)'0')+argp->v));
+	sprintf(str, "%d", argp->v);
 	strcat(argp->nombre,str);
-	arch=fopen(argp->nombre, "rb"); // abro el archivo de solo lectura.
+	path=(char*) malloc (210);
+	*path='\0';
+	strcat(path,"./archivos/");
+	strcat(path,argp->nombre);
+	printf("%s\n",path);
+	arch=fopen(path, "rb"); // abro el archivo de solo lectura.
 	if (arch!=NULL){
 	  fseek(arch,0, SEEK_END);            // me ubico en el final del archivo.
 	  tamanio=ftell(arch);                     // obtengo su tamanio en BYTES.
@@ -153,18 +174,23 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	}
 	
 	//reservamos espacio para mandar el archivo
-	resu=malloc (sizeof(char)*tamanio+100);
-	
-	arch = fopen(argp->nombre,"r");
+	resu=malloc (sizeof(char)*tamanio);
+	printf("tamanio:%i\n",tamanio);
+	*resu='\0';
+	arch = fopen(path,"r");
+	printf("Caracteres:\n");
 	if (arch!=NULL){
 	  while (feof(arch) == 0)
 	  {
 		  fgets(caracteres,100,arch);
 		  strcat (resu,caracteres);
+		  printf("%s\n",caracteres);
 	  }
 	}
+	printf("Resu\n");
 	result=resu;
-	
+	printf("%s\n",resu);
+
 	return &result;
 }
 
@@ -185,13 +211,13 @@ listararchivos_1_svc(void *argp, struct svc_req *rqstp)
 	
 	//reservamos espacio para mandar el archivo
 	resu=malloc (sizeof(char)*tamanio+100);
-	
+	*resu='\0';
 	arch = fopen("archivos.txt","r");
 	while (feof(arch) == 0)
  	{
  		fgets(caracteres,100,arch);
  		strcat (resu,caracteres);
-		printf("%s",resu);
+		//printf("%s",resu);
  	}
 	result=resu;
 	

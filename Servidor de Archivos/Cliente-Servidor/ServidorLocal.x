@@ -1,15 +1,15 @@
 
 struct nombreContenido
 {
-  char* contenido;
-  char* nombre;
+  string contenido<>;
+  string nombre<>;
 };
 
 
 struct nombreVersion
 {
   int v;
-  char* nombre;
+  string nombre<>;
 };
 
 program ej2 {

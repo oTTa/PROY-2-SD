@@ -3,16 +3,16 @@
  * It was generated using rpcgen.
  */
 
-#include "ej2.h"
+#include "ServidorLocal.h"
 
 bool_t
 xdr_nombreContenido (XDR *xdrs, nombreContenido *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_pointer (xdrs, (char **)&objp->contenido, sizeof (char), (xdrproc_t) xdr_char))
+	 if (!xdr_string (xdrs, &objp->contenido, ~0))
 		 return FALSE;
-	 if (!xdr_pointer (xdrs, (char **)&objp->nombre, sizeof (char), (xdrproc_t) xdr_char))
+	 if (!xdr_string (xdrs, &objp->nombre, ~0))
 		 return FALSE;
 	return TRUE;
 }
@@ -24,7 +24,7 @@ xdr_nombreVersion (XDR *xdrs, nombreVersion *objp)
 
 	 if (!xdr_int (xdrs, &objp->v))
 		 return FALSE;
-	 if (!xdr_pointer (xdrs, (char **)&objp->nombre, sizeof (char), (xdrproc_t) xdr_char))
+	 if (!xdr_string (xdrs, &objp->nombre, ~0))
 		 return FALSE;
 	return TRUE;
 }
