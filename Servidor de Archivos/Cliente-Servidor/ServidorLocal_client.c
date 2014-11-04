@@ -35,16 +35,17 @@ ej2_1(char *host)
 	}
 #endif	/* DEBUG */
 	creararchivo_1_arg=(char*)malloc (sizeof(char)*100);
-	
+	modificararchivo_1_arg.nombre=(char*)malloc (sizeof(char)*100);
 	version=malloc(sizeof(int));
 	while (opcion!='5'){
 	    MostrarDialogo();
 	    fflush(stdin);
 	    scanf ("%c",&opcion);
 	    fflush(stdin);
-	    printf("\n\n");
+	    //printf("\n\n");
 	    switch (opcion){
 	      case ('1'):
+			
 			printf ("Ingrese el nombre del archivo a crear:");
 			scanf ("%s",creararchivo_1_arg);
 			result_1 = creararchivo_1(&creararchivo_1_arg, clnt);
@@ -56,9 +57,10 @@ ej2_1(char *host)
 			  printf("El archivo no pudo ser creado ya que existe un archivo con ese nombre\n");
 			break;
 	      case ('2'):
-		    modificararchivo_1_arg.nombre=(char*)malloc (sizeof(char)*100);
+		        
 			printf ("Ingrese el nombre del archivo a modificar:");
 			scanf ("%s",modificararchivo_1_arg.nombre);
+			
 			strcat (call,"rm ");
 			strcat (call,modificararchivo_1_arg.nombre);
 			arch = fopen(modificararchivo_1_arg.nombre, "r");
@@ -95,18 +97,12 @@ ej2_1(char *host)
 			  }
 			  fclose (arch);
 			  
-			  printf ("Nombre %s \n",modificararchivo_1_arg.nombre);
-			  printf ("Contenido %s \n",modificararchivo_1_arg.contenido);
-			  printf ("Nombre %i \n",strlen(modificararchivo_1_arg.nombre));
-			  printf ("Contenido %i \n",strlen(modificararchivo_1_arg.contenido));
-			  
 			  result_2 = modificararchivo_1(&modificararchivo_1_arg, clnt);
 			  if (result_2 == (int *) NULL) {
 				  clnt_perror (clnt, "call failed");
 			  }
 			}
 			free (modificararchivo_1_arg.contenido);
-			free (modificararchivo_1_arg.nombre);
 			break;
 	      case ('3'):
 		    printf ("Ingrese el nombre del archivo a leer:");
@@ -131,6 +127,8 @@ ej2_1(char *host)
 			break;
 	    }
 	}
+	free (modificararchivo_1_arg.nombre);
+	free (creararchivo_1_arg);
 	printf ("Cerrando File Server - version cliente \n");
 #ifndef	DEBUG
 	clnt_destroy (clnt);

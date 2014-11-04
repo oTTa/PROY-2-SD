@@ -15,7 +15,7 @@ creararchivo_1_svc(char **argp, struct svc_req *rqstp)
 	static int  result;
 	char * path;
 	path = (char*)malloc (150);
-	strcat (path,"./archivos/");
+	strcat (path,"../archivos/");
 	strcat (path,*argp);
 	strcat (path,"-0");
 	FILE *archivo;
@@ -61,7 +61,7 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	*str='\0';
 	
 	strcat(argp->nombre,"-");
-	strcat(call,"ls ./archivos |grep ");
+	strcat(call,"ls ../archivos/ |grep ");
 	strcat(call,argp->nombre);
 	strcat(call," > versiones.txt");
 	
@@ -89,10 +89,10 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	    fclose(archivo);
 	    pos=strlen(nombre);
 	    //path para verificar la existe del archivo
-	    strcat (path,"./archivos/");
+	    strcat (path,"../archivos/");
 	    strcat(path,nombre);
 	    //archivo a crear
-	    strcat (path1,"./archivos/");
+	    strcat (path1,"../archivos/");
 	    strcat(path1,argp->nombre);
 	    int  version=0;
 	    archivo=fopen (path,"r");
@@ -132,7 +132,7 @@ tamanoarchivo_1_svc(char **argp, struct svc_req *rqstp)
 
 	FILE* arch; 
 	char path[200];
-	strcat (path,"./archivos/");
+	strcat (path,"../archivos/");
 	strcat (path,*argp);
 	arch=fopen(path, "rb"); // abro el archivo de solo lectura.
 	if (arch!=NULL){
@@ -151,7 +151,7 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	static char * result;
 	char* resu;
 	char* path;
-	long tamanio;
+	int tamanio;
 	FILE* arch; 
 	char caracteres[100];
 	tamanio=0;
@@ -163,7 +163,7 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	strcat(argp->nombre,str);
 	path=(char*) malloc (210);
 	*path='\0';
-	strcat(path,"./archivos/");
+	strcat(path,"../archivos/");
 	strcat(path,argp->nombre);
 	printf("%s\n",path);
 	arch=fopen(path, "rb"); // abro el archivo de solo lectura.
@@ -202,7 +202,7 @@ listararchivos_1_svc(void *argp, struct svc_req *rqstp)
 	char caracteres[100];
 	char* resu; 
 	int tamanio;
-	system ("ls ./archivos > archivos.txt");
+	system ("ls ../archivos > archivos.txt");
 	
 	arch=fopen("archivos.txt", "rb"); // abro el archivo de solo lectura.
 	fseek(arch,0,SEEK_END);            // me ubico en el final del archivo.
