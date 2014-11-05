@@ -77,14 +77,14 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	    while (feof(archivo) == 0)
 	    {
 	    	  caracter = fgetc(archivo);
-			  if (caracter=='\n')
+	          if (caracter=='\n')
 			    pos=0;
-			  else {
-			  	if (!feof(archivo)){
-			    	*(nombre+pos)=caracter;
-			    	pos++;
-				}
-			      }
+		  else {
+    		      if (!feof(archivo)){
+		          *(nombre+pos)=caracter;
+			  pos++;
+			 }
+		       }
 	    }
 	    fclose(archivo);
 	    pos=strlen(nombre);
@@ -152,24 +152,63 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	char* resu;
 	char* path;
 	int tamanio;
+	char caracter;
+	char* call; 
+	int pos;
+	char* nombre;
 	FILE* arch; 
 	char caracteres[100];
-	tamanio=0;
 	char str[15];
-	strcat (argp->nombre,"-");
-	sprintf(str, "%d", argp->v);
-	strcat(argp->nombre,str);
+	tamanio=0;
+	pos=0;
+	nombre=(char*) malloc (210);
 	path=(char*) malloc (210);
 	*path='\0';
+	*nombre='\0';
+	strcat (argp->nombre,"-");
 	strcat(path,"../archivos/");
-	strcat(path,argp->nombre);
-	arch=fopen(path, "rb"); // abro el archivo de solo lectura.
-	if (arch!=NULL){
-	  fseek(arch,0, SEEK_END);            // me ubico en el final del archivo.
-	  tamanio=ftell(arch);                     // obtengo su tamanio en BYTES.
-	  fclose(arch);                               // cierro el archivo.
+	if (argp->v !=-1){
+	  sprintf(str, "%d", argp->v);
+	  strcat(argp->nombre,str);
+	  strcat(path,argp->nombre);
+	}
+	else {
+	call=(char*) malloc (300);
+	*call='\0';
+	strcat(call,"ls ../archivos/ |grep ");
+	strcat(call,argp->nombre);
+	strcat(call," > versiones.txt");
+	system (call);
+	arch = fopen("versiones.txt","r");
+	if (arch == NULL)
+		printf("\nError de apertura del archivo  versiones.txt \n\n");
+	else{
+	      //busco la ultima version del archivo  
+	    while (feof(arch) == 0)
+	    {
+	    	  caracter = fgetc(arch);
+	          if (caracter=='\n')
+			    pos=0;
+		  else {
+    		      if (!feof(arch)){
+		          *(nombre+pos)=caracter;
+			  pos++;
+			 }
+		       }
+	    }
+	    fclose (arch);
+	}
+	strcat(path,nombre);
+	free (call);
 	}
 	
+	
+	arch=fopen(path, "rb"); // abro el archivo de solo lectura.
+	if (arch!=NULL){
+	    fseek(arch,0, SEEK_END);            // me ubico en el final del archivo.
+	    tamanio=ftell(arch);                     // obtengo su tamanio en BYTES.
+	    fclose(arch);                               // cierro el archivo.
+	  }
 	//reservamos espacio para mandar el archivo
 	resu=malloc (sizeof(char)*tamanio);
 	*resu='\0';
@@ -180,7 +219,7 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	}
 	
 	result=resu;
-
+	free (path);
 	return &result;
 }
 

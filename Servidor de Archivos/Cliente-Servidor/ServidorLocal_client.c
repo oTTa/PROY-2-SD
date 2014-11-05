@@ -26,8 +26,6 @@ void
 ej2_1(char *host)
 {	
 	char opcion;	
-
-	
 	clnt = clnt_create (host, ej2, ej2v1, "tcp");
 	
 	if (clnt == NULL) {
@@ -39,6 +37,7 @@ ej2_1(char *host)
 	modificararchivo_1_arg.nombre=(char*)malloc (sizeof(char)*128);
 	call =(char*)malloc (sizeof(char)*256);
 	getarchivo_1_arg.nombre=(char*)malloc (sizeof(char)*128);
+	  
 	while (opcion!='5'){
 	    MostrarDialogo();
 	    fflush(stdin);
@@ -77,13 +76,23 @@ void MostrarDialogo (){
 }
 
 void CrearArchivo () {
-  printf ("Ingrese el nombre del archivo a crear:");
-  scanf ("%s",creararchivo_1_arg);
+  *creararchivo_1_arg='\0';
+  int valido=0;
+  while (valido==0){
+    printf ("Ingrese el nombre del archivo a crear:");
+    scanf ("%s",creararchivo_1_arg);
+    fflush(stdin);
+    if (verificarNombre(creararchivo_1_arg))
+      valido=1;
+    else
+      printf ("El nombre no es valido, recuerde que los nombre deben contener solo letras mayusculas y minusculas.\n");
+  }
+  
   result_1 = creararchivo_1(&creararchivo_1_arg, clnt);
   if (result_1 == (int *) NULL)
 	clnt_perror (clnt, "call failed");
   if (*result_1==1)
-      printf("archivo creado correctamente\n");
+      printf("Archivo creado correctamente\n");
   else
       printf("El archivo no pudo ser creado ya que existe un archivo con ese nombre\n");
 }
@@ -92,16 +101,31 @@ void ModificarArchivo (){
 	FILE* arch;
 	char caracteres[100];
         int aux;
-        printf ("Ingrese el nombre del archivo a modificar:");
+	int valido;
+	valido=0;
 	*modificararchivo_1_arg.nombre='\0';
-	scanf ("%s",modificararchivo_1_arg.nombre);
-	*call='\0';
-	strcat (call,"rm ");
-	strcat (call,modificararchivo_1_arg.nombre);
-	arch = fopen(modificararchivo_1_arg.nombre, "r");
-	//el archivo se abrio con exito y sera borrado para evitar colision con archivos anteriores con el mismo nombre
+	
+	 while (valido==0){
+	    printf ("Ingrese el nombre del archivo a modificar:");
+	    scanf ("%s",modificararchivo_1_arg.nombre);
+	    fflush(stdin);
+	    if (verificarNombre(modificararchivo_1_arg.nombre))
+	      valido=1;
+	    else
+	      printf ("El nombre no es valido, recuerde que los nombre deben contener solo letras mayusculas y minusculas.\n");
+	  }
+	*getarchivo_1_arg.nombre='\0';
+        strcat (getarchivo_1_arg.nombre,modificararchivo_1_arg.nombre);
+	//para obtener la ultima version la cual la modificacion va a ser sobre ella
+	getarchivo_1_arg.v=-1;
+	result_4 = getarchivo_1(&getarchivo_1_arg, clnt);
+	if (result_4 == (char **) NULL) {
+		clnt_perror (clnt, "call failed");
+	}
+	
+	arch = fopen(modificararchivo_1_arg.nombre,"w");
 	if (arch!=NULL){
-	  system (call);
+	  fprintf(arch, *result_4);
 	  fclose(arch);
 	}
 	*call='\0';
@@ -140,21 +164,33 @@ void ModificarArchivo (){
 	  fclose(arch);
 	}
 	free (modificararchivo_1_arg.contenido);
+	printf ("\nEl archivo %s fue modificado con exito\n",modificararchivo_1_arg.nombre);
 }
 
 void MostrarArchivo (){
-        printf ("Ingrese el nombre del archivo a leer:");
-	scanf ("%s",getarchivo_1_arg.nombre);
-	fflush(stdin);
+	int valido=0;
+	while (valido==0){
+	  printf ("Ingrese el nombre del archivo a leer:");
+	  scanf ("%s",getarchivo_1_arg.nombre);
+	  fflush(stdin);
+	  if (verificarNombre(getarchivo_1_arg.nombre))
+	    valido=1;
+	  else
+	    printf ("El nombre no es valido, recuerde que los nombre deben contener solo letras mayusculas y minusculas.\n");
+	}
+        
 	printf ("Ingrese la version del archivo a leer:");
 	scanf ("%i",&(getarchivo_1_arg.v));
 	fflush(stdin);
-	printf("\n\n ++++++++++++++++++++ Archivo: %s-%i ++++++++++++++++++++\n\n",getarchivo_1_arg.nombre,getarchivo_1_arg.v);
 	result_4 = getarchivo_1(&getarchivo_1_arg, clnt);
 	if (result_4 == (char **) NULL) {
 		clnt_perror (clnt, "call failed");
 	}
-	printf ("%s\n",*result_4);
+	else{
+	  printf("\n\n ++++++++++++++++++++ Archivo: %s-%i ++++++++++++++++++++\n\n",getarchivo_1_arg.nombre,getarchivo_1_arg.v);
+	  printf ("%s\n",*result_4);
+	  printf("\n\n ++++++++++++++++++++ Fin de archivo: %s-%i ++++++++++++++++++++\n\n",getarchivo_1_arg.nombre,getarchivo_1_arg.v);
+	}
 }
 
 void ListarArchivos (){
@@ -164,6 +200,24 @@ void ListarArchivos (){
 	}
 	printf ("\n\n ++++++++++++++++++ Archivos en el servidor +++++++++++++++++\n\n");
 	printf ("%s\n",*result_5);
+	
+}
+
+// verifica que el nombre del archivo solo contenga letras entre a-z y A-Z
+//1 si no contiene caracteres distintos a los mencionados 0 si contiene
+int verificarNombre (char* nombre){
+  int resu=1;
+  int i=0;
+  if (*nombre=='\0')
+    resu=0;
+  while ((*(nombre+i)!='\0') && resu==1)
+  {
+    if (!((*(nombre+i)>='a' && *(nombre+i)<='z') ||
+	(*(nombre+i)>='A' && *(nombre+i)<='Z')))
+        resu=0;
+    i++;
+  }
+  return resu;
 }
 
 int
