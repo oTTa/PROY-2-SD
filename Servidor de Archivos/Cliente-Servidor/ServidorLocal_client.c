@@ -43,6 +43,8 @@ ej2_1(char *host)
 	    fflush(stdin);
 	    scanf (" %c",&opcion);
 	    fflush(stdin);
+	    //limpiar pantalla
+	    printf("\e[1;1H\e[2J");
 	    printf("\n\n");
 	    switch (opcion){
 	      case ('1'):
@@ -80,7 +82,7 @@ void CrearArchivo () {
   int valido=0;
   while (valido==0){
     printf ("Ingrese el nombre del archivo a crear:");
-    scanf ("%s",creararchivo_1_arg);
+    scanf (" %[^\n]",creararchivo_1_arg);
     fflush(stdin);
     if (verificarNombre(creararchivo_1_arg))
       valido=1;
@@ -107,7 +109,7 @@ void ModificarArchivo (){
 	
 	 while (valido==0){
 	    printf ("Ingrese el nombre del archivo a modificar:");
-	    scanf ("%s",modificararchivo_1_arg.nombre);
+	    scanf (" %[^\n]",modificararchivo_1_arg.nombre);
 	    fflush(stdin);
 	    if (verificarNombre(modificararchivo_1_arg.nombre))
 	      valido=1;
@@ -171,7 +173,7 @@ void MostrarArchivo (){
 	int valido=0;
 	while (valido==0){
 	  printf ("Ingrese el nombre del archivo a leer:");
-	  scanf ("%s",getarchivo_1_arg.nombre);
+	  scanf (" %[^\n]",getarchivo_1_arg.nombre);
 	  fflush(stdin);
 	  if (verificarNombre(getarchivo_1_arg.nombre))
 	    valido=1;
