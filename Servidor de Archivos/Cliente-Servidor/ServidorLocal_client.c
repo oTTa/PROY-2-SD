@@ -45,7 +45,7 @@ ej2_1(char *host)
 	    fflush(stdin);
 	    //limpiar pantalla
 	    printf("\e[1;1H\e[2J");
-	    printf("\n\n");
+	    
 	    switch (opcion){
 	      case ('1'):
 			CrearArchivo();

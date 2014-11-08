@@ -12,7 +12,7 @@ SOURCES_SVC.c =
 SOURCES_SVC.h = 
 SOURCES.x = ServidorLocal.x
 
-TARGETS_SVC.c = ServidorLocal_svc.c ServidorLocal_server.c ServidorLocal_xdr.c 
+TARGETS_SVC.c = ServidorLocal_svc.c ServidorLocal_server.c ServidorLocal_xdr.c ../binder/binder_clnt.c
 TARGETS_CLNT.c = ServidorLocal_clnt.c ServidorLocal_client.c ServidorLocal_xdr.c 
 TARGETS = ServidorLocal.h ServidorLocal_xdr.c ServidorLocal_clnt.c ServidorLocal_svc.c ServidorLocal_client.c ServidorLocal_server.c
 

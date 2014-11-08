@@ -148,10 +148,10 @@ getversionaescribir_1_svc(char **argp, struct svc_req *rqstp)
 	int encontre;
 	//locacion dinamica de la tabla
 	if (cantArch==0)
-	  arch=(struct archivoVersion*)malloc(5* sizeof(struct archivoVersion));
+	  arch=(struct archivoVersion*)malloc(100* sizeof(struct archivoVersion));
 	else
-	  if (cantArch%5==0)
-	    arch=(struct archivoVersion*)realloc (arch,(cantArch+5)*sizeof(struct archivoVersion));
+	  if (cantArch%100==0)
+	    arch=(struct archivoVersion*)realloc (arch,(cantArch+100)*sizeof(struct archivoVersion));
 	i=0;
 	encontre=0;
 	//verifico si el nombre del archivo ya esta en la tabla
