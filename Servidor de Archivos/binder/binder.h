@@ -14,25 +14,19 @@ extern "C" {
 #endif
 
 
-struct archivoVersion {
-	int v;
-	char *archivo;
-};
-typedef struct archivoVersion archivoVersion;
-
 #define binder 0x20000024
 #define binderv1 1
 
 #if defined(__STDC__) || defined(__cplusplus)
 #define registrarse 1
-extern  void * registrarse_1(char **, CLIENT *);
-extern  void * registrarse_1_svc(char **, struct svc_req *);
+extern  int * registrarse_1(char **, CLIENT *);
+extern  int * registrarse_1_svc(char **, struct svc_req *);
 #define getIpRegistradas 2
 extern  char ** getipregistradas_1(void *, CLIENT *);
 extern  char ** getipregistradas_1_svc(void *, struct svc_req *);
 #define eliminarIp 3
-extern  void * eliminarip_1(char **, CLIENT *);
-extern  void * eliminarip_1_svc(char **, struct svc_req *);
+extern  int * eliminarip_1(char **, CLIENT *);
+extern  int * eliminarip_1_svc(char **, struct svc_req *);
 #define update 4
 extern  char ** update_1(void *, CLIENT *);
 extern  char ** update_1_svc(void *, struct svc_req *);
@@ -43,14 +37,14 @@ extern int binder_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
 #define registrarse 1
-extern  void * registrarse_1();
-extern  void * registrarse_1_svc();
+extern  int * registrarse_1();
+extern  int * registrarse_1_svc();
 #define getIpRegistradas 2
 extern  char ** getipregistradas_1();
 extern  char ** getipregistradas_1_svc();
 #define eliminarIp 3
-extern  void * eliminarip_1();
-extern  void * eliminarip_1_svc();
+extern  int * eliminarip_1();
+extern  int * eliminarip_1_svc();
 #define update 4
 extern  char ** update_1();
 extern  char ** update_1_svc();
@@ -58,16 +52,6 @@ extern  char ** update_1_svc();
 extern  int * getversionaescribir_1();
 extern  int * getversionaescribir_1_svc();
 extern int binder_1_freeresult ();
-#endif /* K&R C */
-
-/* the xdr functions */
-
-#if defined(__STDC__) || defined(__cplusplus)
-extern  bool_t xdr_archivoVersion (XDR *, archivoVersion*);
-
-#else /* K&R C */
-extern bool_t xdr_archivoVersion ();
-
 #endif /* K&R C */
 
 #ifdef __cplusplus

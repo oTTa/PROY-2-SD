@@ -35,7 +35,7 @@ binder_1(struct svc_req *rqstp, register SVCXPRT *transp)
 
 	case registrarse:
 		_xdr_argument = (xdrproc_t) xdr_wrapstring;
-		_xdr_result = (xdrproc_t) xdr_void;
+		_xdr_result = (xdrproc_t) xdr_int;
 		local = (char *(*)(char *, struct svc_req *)) registrarse_1_svc;
 		break;
 
@@ -47,7 +47,7 @@ binder_1(struct svc_req *rqstp, register SVCXPRT *transp)
 
 	case eliminarIp:
 		_xdr_argument = (xdrproc_t) xdr_wrapstring;
-		_xdr_result = (xdrproc_t) xdr_void;
+		_xdr_result = (xdrproc_t) xdr_int;
 		local = (char *(*)(char *, struct svc_req *)) eliminarip_1_svc;
 		break;
 

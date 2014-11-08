@@ -12,9 +12,9 @@ SOURCES_SVC.c =
 SOURCES_SVC.h = 
 SOURCES.x = binder.x
 
-TARGETS_SVC.c = binder_svc.c binder_server.c binder_xdr.c 
-TARGETS_CLNT.c = binder_clnt.c binder_client.c binder_xdr.c 
-TARGETS = binder.h binder_xdr.c binder_clnt.c binder_svc.c binder_client.c binder_server.c
+TARGETS_SVC.c = binder_svc.c binder_server.c   
+TARGETS_CLNT.c = binder_clnt.c binder_client.c   
+TARGETS = binder.h   binder_clnt.c binder_svc.c binder_client.c binder_server.c
 
 OBJECTS_CLNT = $(SOURCES_CLNT.c:%.c=%.o) $(TARGETS_CLNT.c:%.c=%.o)
 OBJECTS_SVC = $(SOURCES_SVC.c:%.c=%.o) $(TARGETS_SVC.c:%.c=%.o)
