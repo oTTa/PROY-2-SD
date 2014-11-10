@@ -3,18 +3,18 @@
 
 # Parameters
 
-CLIENT = ServidorLocal_client
-SERVER = ServidorLocal_server
+CLIENT = Servidor_client
+SERVER = Servidor_server
 
 SOURCES_CLNT.c = 
 SOURCES_CLNT.h = 
 SOURCES_SVC.c = 
 SOURCES_SVC.h = 
-SOURCES.x = ServidorLocal.x
+SOURCES.x = Servidor.x
 
-TARGETS_SVC.c = ServidorLocal_svc.c ServidorLocal_server.c ServidorLocal_xdr.c ../binder/binder_clnt.c
-TARGETS_CLNT.c = ServidorLocal_clnt.c ServidorLocal_client.c ServidorLocal_xdr.c 
-TARGETS = ServidorLocal.h ServidorLocal_xdr.c ServidorLocal_clnt.c ServidorLocal_svc.c ServidorLocal_client.c ServidorLocal_server.c
+TARGETS_SVC.c = Servidor_svc.c Servidor_server.c Servidor_xdr.c ../binder/binder_clnt.c Servidor_clnt.c
+TARGETS_CLNT.c = Servidor_clnt.c Servidor_client.c Servidor_xdr.c 
+TARGETS = Servidor.h Servidor_xdr.c Servidor_clnt.c Servidor_svc.c Servidor_client.c Servidor_server.c
 
 OBJECTS_CLNT = $(SOURCES_CLNT.c:%.c=%.o) $(TARGETS_CLNT.c:%.c=%.o)
 OBJECTS_SVC = $(SOURCES_SVC.c:%.c=%.o) $(TARGETS_SVC.c:%.c=%.o)

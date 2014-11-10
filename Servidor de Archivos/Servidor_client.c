@@ -1,19 +1,17 @@
-#include "ServidorLocal.h"
+#include "Servidor.h"
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 //VARIABLES GLOBALES
-CLIENT *clnt;
 int  *result_1;
 char * creararchivo_1_arg;
 int  *result_2;
 nombreContenido  modificararchivo_1_arg;
-long  *result_3;
-char * tamanoarchivo_1_arg;
 char * *result_4;
 nombreVersion  getarchivo_1_arg;
 char * *result_5;
 char *listararchivos_1_arg;
-char* call;
 
 //METODOS
 void MostrarDialogo();
@@ -21,13 +19,12 @@ void CrearArchivo();
 void ModificarArchivo();
 void MostrarArchivo();
 void ListarArchivos();
+int verificarNombre (char* nombre);
 
-void
-ej2_1(char *host)
-{	
-	char opcion;	
-	clnt = clnt_create (host, ej2, ej2v1, "tcp");
-	
+serversfile_1(char *host)
+{
+	CLIENT *clnt;
+	clnt = clnt_create (host, ServersFile, ServersV1, "tcp");
 	if (clnt == NULL) {
 		clnt_pcreateerror (host);
 		exit (1);
@@ -68,6 +65,7 @@ ej2_1(char *host)
 	printf ("Cerrando File Server - version cliente \n");
 
 	clnt_destroy (clnt);
+
 }
 
 void MostrarDialogo (){
@@ -232,6 +230,6 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 	host = argv[1];
-	ej2_1 (host);
+	serversfile_1 (host);
 exit (0);
 }

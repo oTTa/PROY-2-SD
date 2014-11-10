@@ -4,13 +4,35 @@
  * as a guideline for developing your own functions.
  */
 
-#include "ServidorLocal.h"
+#include "Servidor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../binder/binder.h"
 
+void *
+escribirversion_1_svc(argumento *argp, struct svc_req *rqstp)
+{
+	static char * result;
 
+	/*
+	 * insert server code here
+	 */
+
+	return (void *) &result;
+}
+
+stream_t *
+getversion_1_svc(argumento *argp, struct svc_req *rqstp)
+{
+	static stream_t  result;
+
+	/*
+	 * insert server code here
+	 */
+
+	return &result;
+}
 
 //crea un archivo con el nombre *Argp, devueve 1 si pudo crearlo 0 en caso contrario
 int *

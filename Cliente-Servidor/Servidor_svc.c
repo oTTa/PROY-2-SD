@@ -3,7 +3,7 @@
  * It was generated using rpcgen.
  */
 
-#include "ServidorLocal.h"
+#include "Servidor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <rpc/pmap_clnt.h>
@@ -17,12 +17,13 @@
 #endif
 
 static void
-ej2_1(struct svc_req *rqstp, register SVCXPRT *transp)
+serversfile_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
 	union {
+		argumento escribirversion_1_arg;
+		argumento getversion_1_arg;
 		char *creararchivo_1_arg;
 		nombreContenido modificararchivo_1_arg;
-		char *tamanoarchivo_1_arg;
 		nombreVersion getarchivo_1_arg;
 	} argument;
 	char *result;
@@ -34,6 +35,18 @@ ej2_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		(void) svc_sendreply (transp, (xdrproc_t) xdr_void, (char *)NULL);
 		return;
 
+	case ESCRIBIRVERSION:
+		_xdr_argument = (xdrproc_t) xdr_argumento;
+		_xdr_result = (xdrproc_t) xdr_void;
+		local = (char *(*)(char *, struct svc_req *)) escribirversion_1_svc;
+		break;
+
+	case GETVERSION:
+		_xdr_argument = (xdrproc_t) xdr_argumento;
+		_xdr_result = (xdrproc_t) xdr_stream_t;
+		local = (char *(*)(char *, struct svc_req *)) getversion_1_svc;
+		break;
+
 	case crearArchivo:
 		_xdr_argument = (xdrproc_t) xdr_wrapstring;
 		_xdr_result = (xdrproc_t) xdr_int;
@@ -44,12 +57,6 @@ ej2_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		_xdr_argument = (xdrproc_t) xdr_nombreContenido;
 		_xdr_result = (xdrproc_t) xdr_int;
 		local = (char *(*)(char *, struct svc_req *)) modificararchivo_1_svc;
-		break;
-
-	case tamanoArchivo:
-		_xdr_argument = (xdrproc_t) xdr_wrapstring;
-		_xdr_result = (xdrproc_t) xdr_long;
-		local = (char *(*)(char *, struct svc_req *)) tamanoarchivo_1_svc;
 		break;
 
 	case getArchivo:
@@ -89,15 +96,15 @@ main (int argc, char **argv)
 {
 	register SVCXPRT *transp;
 
-	pmap_unset (ej2, ej2v1);
+	pmap_unset (ServersFile, ServersV1);
 
 	transp = svcudp_create(RPC_ANYSOCK);
 	if (transp == NULL) {
 		fprintf (stderr, "%s", "cannot create udp service.");
 		exit(1);
 	}
-	if (!svc_register(transp, ej2, ej2v1, ej2_1, IPPROTO_UDP)) {
-		fprintf (stderr, "%s", "unable to register (ej2, ej2v1, udp).");
+	if (!svc_register(transp, ServersFile, ServersV1, serversfile_1, IPPROTO_UDP)) {
+		fprintf (stderr, "%s", "unable to register (ServersFile, ServersV1, udp).");
 		exit(1);
 	}
 
@@ -106,8 +113,8 @@ main (int argc, char **argv)
 		fprintf (stderr, "%s", "cannot create tcp service.");
 		exit(1);
 	}
-	if (!svc_register(transp, ej2, ej2v1, ej2_1, IPPROTO_TCP)) {
-		fprintf (stderr, "%s", "unable to register (ej2, ej2v1, tcp).");
+	if (!svc_register(transp, ServersFile, ServersV1, serversfile_1, IPPROTO_TCP)) {
+		fprintf (stderr, "%s", "unable to register (ServersFile, ServersV1, tcp).");
 		exit(1);
 	}
 

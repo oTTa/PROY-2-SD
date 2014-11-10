@@ -38,18 +38,16 @@ registrarse_1_svc(char **argp, struct svc_req *rqstp)
 	  while (i<cantIps && !existe)
 	  {
 	    if (!strcmp(ips[i],*argp))
-	    {
 	      existe=1;
-	      free(ips[i]);
-	      cantIps--;
-	    }
 	    else
 	      i++;
 	  }
 	  //si no esta registrado lo agrego
 	  if (!existe)
 	  {
+	    printf("se registro:%s\n\n",*argp);
 	    ips[cantIps]=malloc(strlen(*argp));
+	    *(ips[cantIps])='\0';
 	    strcat(ips[cantIps],*argp);
 	    cantIps++;
 	    result=1;
@@ -69,11 +67,13 @@ getipregistradas_1_svc(void *argp, struct svc_req *rqstp)
 	int i;
 	char* aux;
 	aux=(char *)malloc(100);
+	*aux='\0';
 	//armo un string con el formato ip\nip\nip\n
 	for (i=0;i<cantIps;i++)
 	{
-	  strcat(aux,ips[i]);
-	  strcat(aux,"\n");
+	  sprintf(aux,"%s%s\n",aux,ips[i]);
+	  //strcat(aux,ips[i]);
+	  //strcat(aux,"\n");
 	}
 	strcat(aux,"\0");
 	result =aux;
@@ -106,8 +106,8 @@ eliminarip_1_svc(char **argp, struct svc_req *rqstp)
 	    i++;
 	}
 	//dejo todas las ip al principio del arreglo
-	if (encontre==1)
-	    for (j=i;j<COMISIONES;j++)
+	if (encontre==1 && cantIps!=0)
+	    for (j=i;j<COMISIONES-1;j++)
 		ips[j]=ips[j+1];
       
 	return &result;
@@ -125,12 +125,14 @@ update_1_svc(void *argp, struct svc_req *rqstp)
 	*aux='\0';
 	//concateno los nombres de los archivos y version es un string con el formato archivo version\n
 	while (i<cantArch){
-	  strcat(aux,(arch+i)->archivo);
+	  sprintf(aux,"%s%s %i\n",aux,(arch+i)->archivo, (arch+i)->v);
+	  /*	Codigo Anterior
+	   * strcat(aux,(arch+i)->archivo);
 	  strcat(aux," ");
 	  c=(char)((arch+i)->v+'0');
 	  strcat(aux,&c);
 	  c='\n';
-	  strcat(aux,&c);
+	  strcat(aux,&c);*/
 	  i++;
 	}
 	//marco el final

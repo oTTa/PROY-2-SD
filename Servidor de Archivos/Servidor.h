@@ -3,8 +3,8 @@
  * It was generated using rpcgen.
  */
 
-#ifndef _SERVIDORLOCAL_H_RPCGEN
-#define _SERVIDORLOCAL_H_RPCGEN
+#ifndef _SERVIDOR_H_RPCGEN
+#define _SERVIDOR_H_RPCGEN
 
 #include <rpc/rpc.h>
 
@@ -13,6 +13,11 @@
 extern "C" {
 #endif
 
+
+typedef struct {
+	u_int stream_t_len;
+	char *stream_t_val;
+} stream_t;
 
 struct nombreContenido {
 	char *contenido;
@@ -26,55 +31,72 @@ struct nombreVersion {
 };
 typedef struct nombreVersion nombreVersion;
 
-#define ej2 0x20000001
-#define ej2v1 1
+struct argumento {
+	char nombre[100];
+	int ver;
+	stream_t file;
+};
+typedef struct argumento argumento;
+
+#define ServersFile 0x20000000
+#define ServersV1 1
 
 #if defined(__STDC__) || defined(__cplusplus)
-#define crearArchivo 1
+#define ESCRIBIRVERSION 1
+extern  void * escribirversion_1(argumento *, CLIENT *);
+extern  void * escribirversion_1_svc(argumento *, struct svc_req *);
+#define GETVERSION 2
+extern  stream_t * getversion_1(argumento *, CLIENT *);
+extern  stream_t * getversion_1_svc(argumento *, struct svc_req *);
+#define crearArchivo 3
 extern  int * creararchivo_1(char **, CLIENT *);
 extern  int * creararchivo_1_svc(char **, struct svc_req *);
-#define modificarArchivo 2
+#define modificarArchivo 4
 extern  int * modificararchivo_1(nombreContenido *, CLIENT *);
 extern  int * modificararchivo_1_svc(nombreContenido *, struct svc_req *);
-#define tamanoArchivo 3
-extern  long * tamanoarchivo_1(char **, CLIENT *);
-extern  long * tamanoarchivo_1_svc(char **, struct svc_req *);
-#define getArchivo 4
+#define getArchivo 5
 extern  char ** getarchivo_1(nombreVersion *, CLIENT *);
 extern  char ** getarchivo_1_svc(nombreVersion *, struct svc_req *);
-#define listarArchivos 5
+#define listarArchivos 6
 extern  char ** listararchivos_1(void *, CLIENT *);
 extern  char ** listararchivos_1_svc(void *, struct svc_req *);
-extern int ej2_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
+extern int serversfile_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
-#define crearArchivo 1
+#define ESCRIBIRVERSION 1
+extern  void * escribirversion_1();
+extern  void * escribirversion_1_svc();
+#define GETVERSION 2
+extern  stream_t * getversion_1();
+extern  stream_t * getversion_1_svc();
+#define crearArchivo 3
 extern  int * creararchivo_1();
 extern  int * creararchivo_1_svc();
-#define modificarArchivo 2
+#define modificarArchivo 4
 extern  int * modificararchivo_1();
 extern  int * modificararchivo_1_svc();
-#define tamanoArchivo 3
-extern  long * tamanoarchivo_1();
-extern  long * tamanoarchivo_1_svc();
-#define getArchivo 4
+#define getArchivo 5
 extern  char ** getarchivo_1();
 extern  char ** getarchivo_1_svc();
-#define listarArchivos 5
+#define listarArchivos 6
 extern  char ** listararchivos_1();
 extern  char ** listararchivos_1_svc();
-extern int ej2_1_freeresult ();
+extern int serversfile_1_freeresult ();
 #endif /* K&R C */
 
 /* the xdr functions */
 
 #if defined(__STDC__) || defined(__cplusplus)
+extern  bool_t xdr_stream_t (XDR *, stream_t*);
 extern  bool_t xdr_nombreContenido (XDR *, nombreContenido*);
 extern  bool_t xdr_nombreVersion (XDR *, nombreVersion*);
+extern  bool_t xdr_argumento (XDR *, argumento*);
 
 #else /* K&R C */
+extern bool_t xdr_stream_t ();
 extern bool_t xdr_nombreContenido ();
 extern bool_t xdr_nombreVersion ();
+extern bool_t xdr_argumento ();
 
 #endif /* K&R C */
 
@@ -82,4 +104,4 @@ extern bool_t xdr_nombreVersion ();
 }
 #endif
 
-#endif /* !_SERVIDORLOCAL_H_RPCGEN */
+#endif /* !_SERVIDOR_H_RPCGEN */
