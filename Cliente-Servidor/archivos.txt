@@ -1,5 +1,0 @@
-algo-0.c
-jaja-0.c
-luca-0.c
-pepe-0.c
-polaco-0.c

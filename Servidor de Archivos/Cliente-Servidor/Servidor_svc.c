@@ -22,7 +22,6 @@ serversfile_1(struct svc_req *rqstp, register SVCXPRT *transp)
 	union {
 		argumento escribirversion_1_arg;
 		argumento getversion_1_arg;
-		char *creararchivo_1_arg;
 		nombreContenido modificararchivo_1_arg;
 		nombreVersion getarchivo_1_arg;
 	} argument;
@@ -45,12 +44,6 @@ serversfile_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		_xdr_argument = (xdrproc_t) xdr_argumento;
 		_xdr_result = (xdrproc_t) xdr_stream_t;
 		local = (char *(*)(char *, struct svc_req *)) getversion_1_svc;
-		break;
-
-	case crearArchivo:
-		_xdr_argument = (xdrproc_t) xdr_wrapstring;
-		_xdr_result = (xdrproc_t) xdr_int;
-		local = (char *(*)(char *, struct svc_req *)) creararchivo_1_svc;
 		break;
 
 	case modificarArchivo:

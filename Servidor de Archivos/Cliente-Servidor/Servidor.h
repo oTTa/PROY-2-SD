@@ -48,16 +48,13 @@ extern  void * escribirversion_1_svc(argumento *, struct svc_req *);
 #define GETVERSION 2
 extern  stream_t * getversion_1(argumento *, CLIENT *);
 extern  stream_t * getversion_1_svc(argumento *, struct svc_req *);
-#define crearArchivo 3
-extern  int * creararchivo_1(char **, CLIENT *);
-extern  int * creararchivo_1_svc(char **, struct svc_req *);
-#define modificarArchivo 4
+#define modificarArchivo 3
 extern  int * modificararchivo_1(nombreContenido *, CLIENT *);
 extern  int * modificararchivo_1_svc(nombreContenido *, struct svc_req *);
-#define getArchivo 5
+#define getArchivo 4
 extern  char ** getarchivo_1(nombreVersion *, CLIENT *);
 extern  char ** getarchivo_1_svc(nombreVersion *, struct svc_req *);
-#define listarArchivos 6
+#define listarArchivos 5
 extern  char ** listararchivos_1(void *, CLIENT *);
 extern  char ** listararchivos_1_svc(void *, struct svc_req *);
 extern int serversfile_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
@@ -69,16 +66,13 @@ extern  void * escribirversion_1_svc();
 #define GETVERSION 2
 extern  stream_t * getversion_1();
 extern  stream_t * getversion_1_svc();
-#define crearArchivo 3
-extern  int * creararchivo_1();
-extern  int * creararchivo_1_svc();
-#define modificarArchivo 4
+#define modificarArchivo 3
 extern  int * modificararchivo_1();
 extern  int * modificararchivo_1_svc();
-#define getArchivo 5
+#define getArchivo 4
 extern  char ** getarchivo_1();
 extern  char ** getarchivo_1_svc();
-#define listarArchivos 6
+#define listarArchivos 5
 extern  char ** listararchivos_1();
 extern  char ** listararchivos_1_svc();
 extern int serversfile_1_freeresult ();

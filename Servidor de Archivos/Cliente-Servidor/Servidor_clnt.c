@@ -40,21 +40,6 @@ getversion_1(argumento *argp, CLIENT *clnt)
 }
 
 int *
-creararchivo_1(char **argp, CLIENT *clnt)
-{
-	static int clnt_res;
-
-	memset((char *)&clnt_res, 0, sizeof(clnt_res));
-	if (clnt_call (clnt, crearArchivo,
-		(xdrproc_t) xdr_wrapstring, (caddr_t) argp,
-		(xdrproc_t) xdr_int, (caddr_t) &clnt_res,
-		TIMEOUT) != RPC_SUCCESS) {
-		return (NULL);
-	}
-	return (&clnt_res);
-}
-
-int *
 modificararchivo_1(nombreContenido *argp, CLIENT *clnt)
 {
 	static int clnt_res;

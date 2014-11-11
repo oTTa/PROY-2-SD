@@ -8,8 +8,6 @@
 
 //VARIABLES GLOBALES
 CLIENT *clnt;
-int  *result_1;
-char * creararchivo_1_arg;
 int  *result_2;
 nombreContenido  modificararchivo_1_arg;
 char * *result_4;
@@ -25,8 +23,7 @@ argumento  escribirversion_1_arg;
 
 //METODOS
 void MostrarDialogo();
-void CrearArchivo();
-void ModificarArchivo();
+void CrearModificarArchivo();
 void MostrarArchivo();
 void ListarArchivos();
 int verificarNombre (char* nombre);
@@ -41,7 +38,6 @@ serversfile_1(char *host)
 		exit (1);
 	}
 	
-	creararchivo_1_arg=(char*)malloc (sizeof(char)*128);
 	modificararchivo_1_arg.nombre=(char*)malloc (sizeof(char)*128);
 	call =(char*)malloc (sizeof(char)*256);
 	getarchivo_1_arg.nombre=(char*)malloc (sizeof(char)*100);
@@ -49,7 +45,7 @@ serversfile_1(char *host)
 	escribirversion_1_arg.file.stream_t_val=(char*)malloc (sizeof(char)*22);
 	*(escribirversion_1_arg.file.stream_t_val)='\0';
 	
-	while (opcion!='5'){
+	while (opcion!='4'){
 	    MostrarDialogo();
 	    fflush(stdin);
 	    scanf (" %c",&opcion);
@@ -59,81 +55,38 @@ serversfile_1(char *host)
 	    
 	    switch (opcion){
 	      case ('1'):
-			CrearArchivo();
+		        CrearModificarArchivo();			
 			break;
 	      case ('2'):
-		        ModificarArchivo();			
-			break;
-	      case ('3'):
 			MostrarArchivo();
 			break;
-	      case ('4'):
+	      case ('3'):
 			ListarArchivos();
 			break;
-	      case ('6'):
-			strcat (getversion_1_arg.nombre,"luca");
-			getversion_1_arg.ver=1;
-			result_getVersion = getversion_1(&getversion_1_arg, clnt);
-			if (result_getVersion == (stream_t *) NULL) {
-			      clnt_perror (clnt, "call failed");
-			}
-			printf("Archivo:\n%s\n\n ",result_getVersion->stream_t_val);
-			*(getversion_1_arg.nombre)='\0';
+	      case ('4'):
+			printf ("Cerrando File Server - version cliente \n");
 			break;
-	      case ('7'):
-			strcat(escribirversion_1_arg.nombre,"archivo\0");
-			escribirversion_1_arg.ver=0;
-			strcat(escribirversion_1_arg.file.stream_t_val,"contenido del archivo\0");
-			escribirversion_1_arg.file.stream_t_len=22,
-			result_escribir = escribirversion_1(&escribirversion_1_arg, clnt);
-			if (result_escribir == (void *) NULL)
-				clnt_perror (clnt, "call failed");
-			*(escribirversion_1_arg.nombre)='\0';
-			
-			break;
-			
+	      default:  printf("### Opcion Invalida, debes ingresar una opcion entre 1 y 4 ###\n");
 	    }
 	}
 	free (modificararchivo_1_arg.nombre);
-	free (creararchivo_1_arg);
 	free (call),
 	free(getarchivo_1_arg.nombre);
-	printf ("Cerrando File Server - version cliente \n");
+	
 
 	clnt_destroy (clnt);
-
+	printf ("############# Conexión finalizada - File Server - version cliente ####################3\n");
 }
 
 void MostrarDialogo (){
   printf ("\n\n################################# File Server - Version Cliente #################################\n\n");
   printf ("\n\nOPCIONES:\n");
-  printf(" 	1 - Crear archivo \n 	2 - Modificar archivo \n 	3 - Mostrar archivo \n 	4 - Listar archivos \n 	5 - Salir\n" );
-  printf ("INGRESE UNA OPCION (1-5): ");
+  printf(" 	1 - Crear/Modificar un archivo \n 	2 - Mostrar un archivo \n 	3 - Listar archivos \n 	4 - Salir\n" );
+  printf ("INGRESE UNA OPCION (1-4): ");
 }
 
-void CrearArchivo () {
-  *creararchivo_1_arg='\0';
-  int valido=0;
-  while (valido==0){
-    printf ("Ingrese el nombre del archivo a crear:");
-    scanf (" %[^\n]",creararchivo_1_arg);
-    fflush(stdin);
-    if (verificarNombre(creararchivo_1_arg))
-      valido=1;
-    else
-      printf ("El nombre no es valido, recuerde que los nombre deben contener solo letras mayusculas y minusculas.\n");
-  }
-  
-  result_1 = creararchivo_1(&creararchivo_1_arg, clnt);
-  if (result_1 == (int *) NULL)
-	clnt_perror (clnt, "call failed");
-  if (*result_1==1)
-      printf("Archivo creado correctamente\n");
-  else
-      printf("El archivo no pudo ser creado ya que existe un archivo con ese nombre\n");
-}
 
-void ModificarArchivo (){
+void CrearModificarArchivo (){
 	FILE* arch;
 	char caracteres[100];
         int aux;

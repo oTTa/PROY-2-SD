@@ -24,9 +24,8 @@ program ServersFile {
 	version ServersV1 {
 		void ESCRIBIRVERSION(argumento)=1;
 		stream_t GETVERSION(argumento)=2;
-		int crearArchivo (string) = 3;
-		int modificarArchivo(nombreContenido) = 4;
-		string getArchivo(nombreVersion) =5;
-		string listarArchivos ()  = 6;
+		int modificarArchivo(nombreContenido) = 3;
+		string getArchivo(nombreVersion) =4;
+		string listarArchivos ()  = 5;
 	}=1;
 }=0x20000000;  

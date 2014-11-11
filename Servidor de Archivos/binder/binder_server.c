@@ -22,7 +22,7 @@ char* ips[COMISIONES];
 pthread_mutex_t versiones = PTHREAD_MUTEX_INITIALIZER;
 int cantIps=0;
 int cantArch=0;
-//init( &versiones, NULL);
+
 
 //retorna 1 si te pudiste registrarse, 0 en caso de que ya estes registrado, 2 este lleno el binder
 int *
@@ -70,11 +70,7 @@ getipregistradas_1_svc(void *argp, struct svc_req *rqstp)
 	*aux='\0';
 	//armo un string con el formato ip\nip\nip\n
 	for (i=0;i<cantIps;i++)
-	{
 	  sprintf(aux,"%s%s\n",aux,ips[i]);
-	  //strcat(aux,ips[i]);
-	  //strcat(aux,"\n");
-	}
 	strcat(aux,"\0");
 	result =aux;
 	return &result;
@@ -126,13 +122,6 @@ update_1_svc(void *argp, struct svc_req *rqstp)
 	//concateno los nombres de los archivos y version es un string con el formato archivo version\n
 	while (i<cantArch){
 	  sprintf(aux,"%s%s %i\n",aux,(arch+i)->archivo, (arch+i)->v);
-	  /*	Codigo Anterior
-	   * strcat(aux,(arch+i)->archivo);
-	  strcat(aux," ");
-	  c=(char)((arch+i)->v+'0');
-	  strcat(aux,&c);
-	  c='\n';
-	  strcat(aux,&c);*/
 	  i++;
 	}
 	//marco el final
