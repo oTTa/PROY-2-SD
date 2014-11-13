@@ -9,12 +9,9 @@ char *ip_local() {
 struct sockaddr_in host;
 char nombre[255];
 char *ip;
-ip =(char*) malloc(17); 
-*ip='\0';
-strcat(ip,"192.168.0.2\0");
 gethostname(nombre, 255);
 host.sin_addr = * (struct in_addr*) gethostbyname(nombre)->h_addr;
-//ip = inet_ntoa(host.sin_addr);
+ip = inet_ntoa(host.sin_addr);
 return ip;
 }
 

@@ -267,7 +267,7 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	    fseek(arch,0, SEEK_END);            // me ubico en el final del archivo.
 	    tamanio=ftell(arch);                     // obtengo su tamanio en BYTES.
 	    fclose(arch);                               // cierro el archivo.
-	  }
+	}
 	//verifica que encontro un archivo con su version y procede a copiarlo para enviar
 	if (strcmp(path,"../archivos/") && tamanio>=0){
 	  //reservamos espacio para mandar el archivo
@@ -277,6 +277,7 @@ getarchivo_1_svc(nombreVersion *argp, struct svc_req *rqstp)
 	  if (arch!=NULL){
 	    while (fgets(caracteres,100,arch) != NULL)
 		    strcat (resu,caracteres);
+	    fclose(arch);
 	  }
 	}
 	else {
