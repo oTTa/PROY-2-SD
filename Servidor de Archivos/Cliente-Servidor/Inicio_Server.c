@@ -7,11 +7,14 @@
 #include <arpa/inet.h>
 #include "../binder/binder.h"
 
+//Declaracion de metodos
 char *ip_local();
 void inicioServer ();
 int invertir (int numero);
 void IpServerActualizador (char* ip,char* ips);
 int* versionesActualizar (char* nombre,int ultimaVersion);
+void actualizar (char* nombre,int* versiones,char* ips);
+/**************************************************/
 
 void inicioServer (){
 	//declaro las variables a utilizar
@@ -19,7 +22,6 @@ void inicioServer (){
 	char *update_1_arg;
 	char* call; 
 	char* misArchivos;
-	char ip[17];
 	char** ips;
 	char* nombre;
 	int tamanio;
@@ -30,7 +32,7 @@ void inicioServer (){
 	int leerVersion;
 	int* misVersiones; 
 	char *getipregistradas_1_arg;
-	
+	char *nombreArchivo;
 	CLIENT *binder_clnt;
 	FILE* arch; 
 	
@@ -57,11 +59,13 @@ void inicioServer (){
 	clnt_destroy (binder_clnt);
 	//Actualizacion
 	nombre=(char*) malloc(200);
+	*nombre='\0';
+	nombreArchivo=(char*) malloc(200);
+	*nombreArchivo='\0';
 	posNombre=0;
 	posUpdate=0;
 	leerVersion=0;
 	versionArchivoBinder=0;
-	int pos=0;
 	while (*(*update_result+posUpdate)!='\0')
 	{	//armo el nombre del archivo al formato de mi server, nombre-version
 		if (*(*update_result+posUpdate)!='\n'){
@@ -84,18 +88,73 @@ void inicioServer (){
 		  posNombre=0;
 		  misVersiones=versionesActualizar(nombre,versionArchivoBinder);
 		  versionArchivoBinder=0;
-		  printf("%s:",nombre);
-		  while (*(misVersiones+pos)!=NULL){
-		    printf(" %i",*(misVersiones+pos));
-		    pos++;
-		  }
-		  printf("\n");
-		  pos=0;
+		  strncpy( nombreArchivo, nombre, strlen(nombre)-1 );
+		  *(nombreArchivo+strlen(nombre)-1)='\0';
+		  actualizar (nombreArchivo,misVersiones,*ips);
 		  free(misVersiones);
 		}
 		 posUpdate++;
 	}
 	free(nombre);
+}
+
+void actualizar (char* nombre,int* versiones,char* ips){
+  char ip[17];
+  CLIENT *servidor_actualizados;
+  stream_t  *archivo;
+  argumento  getversion_1_arg;
+  char* nombreArchivoCrear;
+  char* path;
+  FILE* arch; 
+  int aux;
+  char str [15];
+  path=(char*)malloc (150);
+  *path='\0';
+  nombreArchivoCrear=(char*)malloc (120);
+  *nombreArchivoCrear='\0';
+  
+  IpServerActualizador(ip,ips);
+  
+  
+  servidor_actualizados = clnt_create (ip, ServersFile, ServersV1, "tcp");
+  if (servidor_actualizados == NULL) {
+		clnt_pcreateerror (ip);
+		exit (1);
+  }
+  
+  aux=0;
+  while (aux<strlen(nombre)){
+    getversion_1_arg.nombre[aux]=*(nombre+aux);
+    aux++;
+  }
+  getversion_1_arg.nombre[aux]='\0';
+  aux=0;
+  printf("Se procedera a actualizar el archivo %s\n",getversion_1_arg.nombre);
+  while (*(versiones+aux)!=-1){
+    *path='\0';
+    *str='\0';
+    getversion_1_arg.ver=*(versiones+aux);
+    printf ("Descarganlo la version %i \n",getversion_1_arg.ver);
+    archivo = getversion_1(&getversion_1_arg, servidor_actualizados);
+    printf("algo\n");
+    if (archivo == (stream_t *) NULL) {
+	  clnt_perror (servidor_actualizados, "call failed");
+    }
+    
+    strcat (path,"../archivos/");
+    strcat(path,nombre);
+    strcat(path,"-");
+    sprintf(str, "%d",*(versiones+aux));
+    strcat(path,str);
+    strcat(path,".c");
+    
+    arch=fopen (path,"w");
+    fprintf(arch,archivo->stream_t_val);
+    fclose (arch); 
+    printf("- Descargada con exito.\n");
+    aux++;
+  } 
+  clnt_destroy(servidor_actualizados);
 }
 
 int invertir (int numero){
@@ -123,7 +182,6 @@ int* versionesActualizar (char* nombre,int ultimaVersion){
    int i;
    int pertenece;
    
-   printf("version %s%i\n",nombre,ultimaVersion);
    
    //copia las versiones es un archivo para leerlas
    misVersiones=(int*)malloc (sizeof(int)*11);
@@ -182,7 +240,7 @@ int* versionesActualizar (char* nombre,int ultimaVersion){
        }
        aux++;
    }
-   *(misVersiones+posVersiones)=NULL;
+   *(misVersiones+posVersiones)=-1;
    i=0;
    posResu=0;
    //calculo las versiones que me faltan
@@ -203,7 +261,7 @@ int* versionesActualizar (char* nombre,int ultimaVersion){
    }
    free (misVersiones);
    //marco el final del arreglo
-   *(resu+posResu)=NULL;
+   *(resu+posResu)=-1;
    return resu;
 }
 
@@ -228,7 +286,7 @@ void IpServerActualizador (char* ip,char* ips){
 	    posIP=0;
 	    if (strcmp(ip,iplocal) != 0){
 	      continuar=0;
-	      printf("Actualizacion con:(%s)\n",ip);
+	      printf("La actualizacion se realizara con el servidor %s\n",ip);
 	    }
 	  }
 	  i++;

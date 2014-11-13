@@ -101,11 +101,15 @@ eliminarip_1_svc(char **argp, struct svc_req *rqstp)
 	  else
 	    i++;
 	}
+	
+	if (encontre==1)
+	  printf("Se elimino la ip %s",*argp);
+	
 	//dejo todas las ip al principio del arreglo
 	if (encontre==1 && cantIps!=0)
 	    for (j=i;j<COMISIONES-1;j++)
 		ips[j]=ips[j+1];
-      
+	    
 	return &result;
 }
 
