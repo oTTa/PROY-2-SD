@@ -10,16 +10,27 @@
 //METODOS AUXILIARES
 
 char *ip_local() {
-struct sockaddr_in host;
-char nombre[255];
-char *ip;
-ip =(char*) malloc(17); 
-*ip='\0';
-strcat(ip,"192.168.0.2\0");
-gethostname(nombre, 255);
-host.sin_addr = * (struct in_addr*) gethostbyname(nombre)->h_addr;
-//ip = inet_ntoa(host.sin_addr);
-return ip;
+  struct sockaddr_in host;
+  char nombre[255];
+  char *ip;
+  ip =(char*) malloc(17); 
+  *ip='\0';
+  strcat(ip,"192.168.0.2\0");
+  gethostname(nombre, 255);
+  host.sin_addr = * (struct in_addr*) gethostbyname(nombre)->h_addr;
+  //ip = inet_ntoa(host.sin_addr);
+  return ip;
+}
+
+int imprimirIPConectada(struct svc_req *rqstp)
+{
+printf("%d.%d.%d.%d",
+(rqstp->rq_xprt->xp_raddr.sin_addr.s_addr&0xFF),
+((rqstp->rq_xprt->xp_raddr.sin_addr.s_addr&0xFF00)>>8),
+((rqstp->rq_xprt->xp_raddr.sin_addr.s_addr&0xFF0000)>>16),
+((rqstp->rq_xprt->xp_raddr.sin_addr.s_addr&0xFF000000)>>24));
+
+return 0;
 }
 //FIN METODOS AUXILIARES
 
@@ -30,6 +41,10 @@ escribirversion_1_svc(argumento *argp, struct svc_req *rqstp)
 	char* path;
 	char str[15];
 	FILE *archivoNuevo;
+	
+	printf("\nRecibiendo el archivo %s-%i.c desde el server ",argp->nombre,argp->ver);
+	imprimirIPConectada(rqstp);
+	printf("\n");
 	
 	path=(char*) malloc (120);
 	*path='\0';
@@ -47,7 +62,7 @@ escribirversion_1_svc(argumento *argp, struct svc_req *rqstp)
 	fclose (archivoNuevo);
 
 	free (path);
-	
+	printf("\n\n");
 	return (void *) &result;
 }
 
@@ -61,6 +76,10 @@ getversion_1_svc(argumento *argp, struct svc_req *rqstp)
 	FILE* arch; 
 	char caracteres[100];
 	char str[15];
+	
+	printf("EL servidor ");
+	imprimirIPConectada(rqstp);
+	printf(" solicito el archivo %s-%i.c\n",argp->nombre,argp->ver);
 	
 	tamanio=0;
 	path=(char*) malloc (120);
@@ -108,12 +127,15 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	char* call; 
 	char* nombre;
 	FILE *archivoNuevo;
+	FILE *Binder;
 	char caracter;
 	char* str;
 	char* path;
 	char * *ips;
 	char* iplocal;
+	char binderIP[17];
 	char ip[17];
+	char *ipborrar;
 	int *version;
 	int i;
 	int posIP;
@@ -131,7 +153,14 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	result=1;
 	
 	//creo una conexion con el binder
-	clnt = clnt_create ("localhost", binder, binderv1, "tcp");
+	Binder=fopen ("binder.txt","r");
+	if (Binder==NULL){
+	  printf("imposible obtener la ip del binder.");
+	  result=0;
+	  return &result;
+	}
+	fgets(binderIP,17,Binder);
+	clnt = clnt_create (binderIP, binder, binderv1, "tcp");
 	if (clnt == NULL) {
 		clnt_perror (clnt, "call failed");
 		result=0;
@@ -144,8 +173,11 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	ips = getipregistradas_1((void*)&getipregistradas_1_arg, clnt);
 	if (ips == (char **) NULL) {
 	    clnt_perror (clnt, "call failed");
+	    printf("imposible obtener las ips de los servidores.");
+	    result=0;
+	    return &result;
 	}
-	clnt_destroy (clnt);
+	
 	
 	//preraro el argumento para enviarlo a los demas servidores
 	escribirversion_1_arg.ver=*version;
@@ -184,16 +216,28 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	    if (strcmp(ip,iplocal) != 0){
 	       printf("enviando a:(%s)\n",ip);
 	      server = clnt_create (ip, ServersFile, ServersV1, "tcp");
+	      if (server == NULL) {
+		    clnt_pcreateerror (ip);
+		    printf("\nSe elimino el server %s ya que esta desconectado y el archivo no pudo ser enviado\n",ip);
+		    ipborrar=(char*)malloc (17);
+		    *ipborrar='\0';
+		    strcat (ipborrar,ip);
+		    eliminarip_1(&ipborrar, clnt);
+		    free (ipborrar);
+	      }
+	      else{
 	      result_escribir = escribirversion_1(&escribirversion_1_arg, server);
-	      if (result_escribir == (void *) NULL)
-				  clnt_perror (server, "call failed");
+	      if (result_escribir == (void *) NULL){
+				  printf("Fallo el envio.\n");		  
+	      }
 	      clnt_destroy (server);
+	      }
 	    }
 	  }
 	  i++;
 	}
 	
-	
+	clnt_destroy (clnt);
 	free (path);
 	free (str);
 	free (nombre);

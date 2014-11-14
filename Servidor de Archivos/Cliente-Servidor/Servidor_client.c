@@ -95,7 +95,7 @@ void CrearModificarArchivo (){
 	*modificararchivo_1_arg.nombre='\0';
 	
 	 while (valido==0){
-	    printf ("Ingrese el nombre del archivo a modificar:");
+	    printf ("Ingrese el nombre del archivo a crear o modificar:");
 	    scanf (" %[^\n]",modificararchivo_1_arg.nombre);
 	    fflush(stdin);
 	    if (verificarNombre(modificararchivo_1_arg.nombre))
@@ -153,7 +153,10 @@ void CrearModificarArchivo (){
 	  fclose(arch);
 	}
 	free (modificararchivo_1_arg.contenido);
-	printf ("\nEl archivo %s fue modificado con exito\n",modificararchivo_1_arg.nombre);
+	if(*result_2==1)
+	  printf ("\nEl archivo %s fue creado/modificado con exito\n",modificararchivo_1_arg.nombre);
+	else
+	  printf ("\nEl archivo %s NO pudo ser creado/modificado\n",modificararchivo_1_arg.nombre);
 }
 
 void MostrarArchivo (){

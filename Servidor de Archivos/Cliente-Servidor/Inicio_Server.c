@@ -11,18 +11,19 @@
 char *ip_local();
 void inicioServer ();
 int invertir (int numero);
-void IpServerActualizador (char* ip,char* ips);
+void IpServerActualizador (char* ip,char* ips,CLIENT *binder_clnt);
 int* versionesActualizar (char* nombre,int ultimaVersion);
-void actualizar (char* nombre,int* versiones,char* ips);
+void actualizar (char* nombre,int* versiones,char* ips,CLIENT *binder_clnt);
 /**************************************************/
 
-void inicioServer (){
+void inicioServer (char *binderIP){
 	//declaro las variables a utilizar
 	char * *update_result;
 	char *update_1_arg;
 	char* call; 
 	char* misArchivos;
 	char** ips;
+	char* iplocal;
 	char* nombre;
 	int tamanio;
 	int posUpdate;
@@ -33,16 +34,22 @@ void inicioServer (){
 	int* misVersiones; 
 	char *getipregistradas_1_arg;
 	char *nombreArchivo;
+	int  *registrado;
+	int necesitoActualizar;
+	
 	CLIENT *binder_clnt;
 	FILE* arch; 
 	
+	arch=fopen ("binder.txt","w");
+	fprintf(arch,binderIP);
+	fclose (arch);
 	//creo una conexion con el binder
-	binder_clnt = clnt_create ("localhost", binder, binderv1, "tcp");
+	binder_clnt = clnt_create (binderIP, binder, binderv1, "tcp");
 	if (binder_clnt == NULL) {
-		clnt_pcreateerror ("localhost");
+		printf("Imposible establecer una conexion con el binder\n");
+		clnt_pcreateerror (binderIP);
 		exit (1);
 	}
-	
 	//obtengo las ips para recibir los archivos
 	ips = getipregistradas_1((void*)&getipregistradas_1_arg, binder_clnt);
 	if (ips == (char **) NULL) {
@@ -55,8 +62,7 @@ void inicioServer (){
 		clnt_perror (binder_clnt, "call failed");
 		exit(0);
 	}
-	
-	clnt_destroy (binder_clnt);
+
 	//Actualizacion
 	nombre=(char*) malloc(200);
 	*nombre='\0';
@@ -66,6 +72,7 @@ void inicioServer (){
 	posUpdate=0;
 	leerVersion=0;
 	versionArchivoBinder=0;
+	necesitoActualizar=0;
 	while (*(*update_result+posUpdate)!='\0')
 	{	//armo el nombre del archivo al formato de mi server, nombre-version
 		if (*(*update_result+posUpdate)!='\n'){
@@ -90,16 +97,53 @@ void inicioServer (){
 		  versionArchivoBinder=0;
 		  strncpy( nombreArchivo, nombre, strlen(nombre)-1 );
 		  *(nombreArchivo+strlen(nombre)-1)='\0';
-		  actualizar (nombreArchivo,misVersiones,*ips);
+		  if (*misVersiones!=-1){//es necesario actualizar el archivo
+		    necesitoActualizar=1;
+		    if (**ips!='\0')//me actualizo solo si hay alguien conectado
+		      actualizar (nombreArchivo,misVersiones,*ips,binder_clnt);
+		  }
 		  free(misVersiones);
 		}
 		 posUpdate++;
 	}
 	free(nombre);
+	free(nombreArchivo);
+	if (necesitoActualizar==1 && **ips=='\0'){
+	  printf("No hay nadie conectado al binder para actualizarme y empezar el servicio\n");
+	}
+	else{
+	  iplocal=ip_local();
+	  registrado = registrarse_1(&iplocal, binder_clnt);
+	  if (registrado == (int *) NULL) {
+				  printf("Imposible registrarse en el binder\n");
+				  clnt_perror (binder_clnt, "call failed");
+	  }
+	  clnt_destroy(binder_clnt);
+	  printf("++++++++++++ Servidor listo para recibir peticiones ++++++++++\n\n");
+	  execv("./Servidor_server", NULL);
+	}
 }
 
-void actualizar (char* nombre,int* versiones,char* ips){
+void eliminarmeDelBinder (CLIENT *binder_clnt){
+  int* elimino;
+  char* iplocal;
+  printf("Me elimino del binder por que estoy registrado pero no conectado con los demas servidores.\n");
+  iplocal=ip_local();
+  elimino = eliminarip_1(&iplocal, binder_clnt);
+  if (elimino == (int *) NULL) {
+	clnt_perror (binder_clnt, "call failed");
+  }
+  else{
+    if (*elimino==0)
+	    printf ("Alguien ya me elimino del binder\n");
+    else
+	    printf("Eliminado del binder con exito\n");
+  }
+}
+
+void actualizar (char* nombre,int* versiones,char* ips,CLIENT *binder_clnt){
   char ip[17];
+  char *ipborrar;
   CLIENT *servidor_actualizados;
   stream_t  *archivo;
   argumento  getversion_1_arg;
@@ -113,48 +157,58 @@ void actualizar (char* nombre,int* versiones,char* ips){
   nombreArchivoCrear=(char*)malloc (120);
   *nombreArchivoCrear='\0';
   
-  IpServerActualizador(ip,ips);
+  IpServerActualizador(ip,ips,binder_clnt);
   
-  
-  servidor_actualizados = clnt_create (ip, ServersFile, ServersV1, "tcp");
-  if (servidor_actualizados == NULL) {
-		clnt_pcreateerror (ip);
-		exit (1);
+  if (*ip!='\0'){//en caso de que la ip actualizadora haya sido yo.
+      servidor_actualizados = clnt_create (ip, ServersFile, ServersV1, "tcp");
+      if (servidor_actualizados == NULL) {
+		    clnt_pcreateerror (ip);
+		    printf("Se elimino el server %s ya que esta desconectado\n",ip);
+		    ipborrar=(char*)malloc (17);
+		    *ipborrar='\0';
+		    strcat (ipborrar,ip);
+		    eliminarip_1(&ipborrar, binder_clnt);
+		    free (ipborrar);
+      }
+      else{
+	aux=0;
+	while (aux<strlen(nombre)){
+	  getversion_1_arg.nombre[aux]=*(nombre+aux);
+	  aux++;
+	}
+	getversion_1_arg.nombre[aux]='\0';
+	aux=0;
+	
+	printf("Se procedera a actualizar el archivo %s\n",getversion_1_arg.nombre);
+	while (*(versiones+aux)!=-1){
+	  *path='\0';
+	  *str='\0';
+	  getversion_1_arg.ver=*(versiones+aux);
+	  getversion_1_arg.file.stream_t_val="";
+	  getversion_1_arg.file.stream_t_len=0;
+	  printf ("Descarganlo la version %i ",getversion_1_arg.ver);
+	  archivo = getversion_1(&getversion_1_arg, servidor_actualizados);
+	  if (archivo == (stream_t *) NULL) {
+		clnt_perror (servidor_actualizados, "call failed");
+	  }
+	  
+	  strcat (path,"../archivos/");
+	  strcat(path,nombre);
+	  strcat(path,"-");
+	  sprintf(str, "%d",*(versiones+aux));
+	  strcat(path,str);
+	  strcat(path,".c");
+	  
+	  arch=fopen (path,"w");
+	  fprintf(arch,archivo->stream_t_val);
+	  fclose (arch); 
+	  printf("- Descargada con exito.\n");
+	  aux++;
+	} 
+	free(nombreArchivoCrear);
+	clnt_destroy(servidor_actualizados);
+      }
   }
-  
-  aux=0;
-  while (aux<strlen(nombre)){
-    getversion_1_arg.nombre[aux]=*(nombre+aux);
-    aux++;
-  }
-  getversion_1_arg.nombre[aux]='\0';
-  aux=0;
-  printf("Se procedera a actualizar el archivo %s\n",getversion_1_arg.nombre);
-  while (*(versiones+aux)!=-1){
-    *path='\0';
-    *str='\0';
-    getversion_1_arg.ver=*(versiones+aux);
-    printf ("Descarganlo la version %i \n",getversion_1_arg.ver);
-    archivo = getversion_1(&getversion_1_arg, servidor_actualizados);
-    printf("algo\n");
-    if (archivo == (stream_t *) NULL) {
-	  clnt_perror (servidor_actualizados, "call failed");
-    }
-    
-    strcat (path,"../archivos/");
-    strcat(path,nombre);
-    strcat(path,"-");
-    sprintf(str, "%d",*(versiones+aux));
-    strcat(path,str);
-    strcat(path,".c");
-    
-    arch=fopen (path,"w");
-    fprintf(arch,archivo->stream_t_val);
-    fclose (arch); 
-    printf("- Descargada con exito.\n");
-    aux++;
-  } 
-  clnt_destroy(servidor_actualizados);
 }
 
 int invertir (int numero){
@@ -266,7 +320,7 @@ int* versionesActualizar (char* nombre,int ultimaVersion){
 }
 
 
-void IpServerActualizador (char* ip,char* ips){
+void IpServerActualizador (char* ip,char* ips,CLIENT *binder_clnt){
   int posIP;
   char* iplocal;
   int continuar;
@@ -275,7 +329,6 @@ void IpServerActualizador (char* ip,char* ips){
   continuar=1;
   posIP=0;
   iplocal=ip_local();
- 
   while (*(ips+i)!='\0' && continuar){
 	  if (*(ips+i)!='\n'){
 	    ip[posIP]=*(ips+i);
@@ -288,9 +341,13 @@ void IpServerActualizador (char* ip,char* ips){
 	      continuar=0;
 	      printf("La actualizacion se realizara con el servidor %s\n",ip);
 	    }
+	    else
+	      eliminarmeDelBinder(binder_clnt);
 	  }
 	  i++;
   }
+  if (strcmp(ip,iplocal) == 0)
+    *ip='\0';
 }
 
 
@@ -310,6 +367,13 @@ char *ip_local() {
 int
 main (int argc, char *argv[])
 {
-  inicioServer ();
+  char *binderIP;
+
+	if (argc < 2) {
+		printf ("Debes ingresar la ip del binder como argumento\n");
+		exit (1);
+	}
+	binderIP = argv[1];
+  inicioServer (binderIP);
   exit (0);
 } 

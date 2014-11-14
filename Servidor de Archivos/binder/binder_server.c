@@ -24,6 +24,17 @@ int cantIps=0;
 int cantArch=0;
 
 
+int imprimirIPConectada(struct svc_req *rqstp)
+{
+printf("%d.%d.%d.%d",
+(rqstp->rq_xprt->xp_raddr.sin_addr.s_addr&0xFF),
+((rqstp->rq_xprt->xp_raddr.sin_addr.s_addr&0xFF00)>>8),
+((rqstp->rq_xprt->xp_raddr.sin_addr.s_addr&0xFF0000)>>16),
+((rqstp->rq_xprt->xp_raddr.sin_addr.s_addr&0xFF000000)>>24));
+
+return 0;
+}
+
 //retorna 1 si te pudiste registrarse, 0 en caso de que ya estes registrado, 2 este lleno el binder
 int *
 registrarse_1_svc(char **argp, struct svc_req *rqstp)
@@ -102,8 +113,11 @@ eliminarip_1_svc(char **argp, struct svc_req *rqstp)
 	    i++;
 	}
 	
-	if (encontre==1)
-	  printf("Se elimino la ip %s",*argp);
+	if (encontre==1){
+	  printf("El servidor ");
+	  imprimirIPConectada(rqstp);
+	  printf("elimino al servidor %s\n",*argp);
+	}
 	
 	//dejo todas las ip al principio del arreglo
 	if (encontre==1 && cantIps!=0)
