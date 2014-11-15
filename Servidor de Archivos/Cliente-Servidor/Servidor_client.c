@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+
 //VARIABLES GLOBALES
 CLIENT *clnt;
 int  *result_2;

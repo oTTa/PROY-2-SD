@@ -1,3 +1,0 @@
-polololo
-llsl
-estas lisoa

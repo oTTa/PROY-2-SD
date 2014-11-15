@@ -7,6 +7,12 @@
 #include <arpa/inet.h>
 #include "../binder/binder.h"
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+
+
 //Declaracion de metodos
 char *ip_local();
 void inicioServer ();
@@ -15,6 +21,26 @@ void IpServerActualizador (char* ip,char* ips,CLIENT *binder_clnt);
 int* versionesActualizar (char* nombre,int ultimaVersion);
 void actualizar (char* nombre,int* versiones,char* ips,CLIENT *binder_clnt);
 /**************************************************/
+
+char* ip_hamachi(){
+   int fd;
+ char* ip;
+ struct ifreq ifr;
+
+ fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+ /* I want to get an IPv4 IP address */
+ ifr.ifr_addr.sa_family = AF_INET;
+
+ /* I want IP address attached to "eth0" */
+ strncpy(ifr.ifr_name, "ham0", IFNAMSIZ-1);
+
+ ioctl(fd, SIOCGIFADDR, &ifr);
+
+ close(fd);
+ ip=inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+ return ip;
+}
 
 void inicioServer (char *binderIP){
 	//declaro las variables a utilizar
@@ -112,7 +138,8 @@ void inicioServer (char *binderIP){
 	  printf("No hay nadie conectado al binder para actualizarme y empezar el servicio\n");
 	}
 	else{
-	  iplocal=ip_local();
+	  //iplocal=ip_local();
+	  iplocal=ip_hamachi();
 	  registrado = registrarse_1(&iplocal, binder_clnt);
 	  if (registrado == (int *) NULL) {
 				  printf("Imposible registrarse en el binder\n");
@@ -128,7 +155,8 @@ void eliminarmeDelBinder (CLIENT *binder_clnt){
   int* elimino;
   char* iplocal;
   printf("Me elimino del binder por que estoy registrado pero no conectado con los demas servidores.\n");
-  iplocal=ip_local();
+  //iplocal=ip_local();
+  iplocal=ip_hamachi();
   elimino = eliminarip_1(&iplocal, binder_clnt);
   if (elimino == (int *) NULL) {
 	clnt_perror (binder_clnt, "call failed");
@@ -144,6 +172,7 @@ void eliminarmeDelBinder (CLIENT *binder_clnt){
 void actualizar (char* nombre,int* versiones,char* ips,CLIENT *binder_clnt){
   char ip[17];
   char *ipborrar;
+  char **ipsReintentar;
   CLIENT *servidor_actualizados;
   stream_t  *archivo;
   argumento  getversion_1_arg;
@@ -152,6 +181,7 @@ void actualizar (char* nombre,int* versiones,char* ips,CLIENT *binder_clnt){
   FILE* arch; 
   int aux;
   char str [15];
+  char *getipregistradas_1_arg;
   path=(char*)malloc (150);
   *path='\0';
   nombreArchivoCrear=(char*)malloc (120);
@@ -169,6 +199,10 @@ void actualizar (char* nombre,int* versiones,char* ips,CLIENT *binder_clnt){
 		    strcat (ipborrar,ip);
 		    eliminarip_1(&ipborrar, binder_clnt);
 		    free (ipborrar);
+		    ipsReintentar = getipregistradas_1((void*)&getipregistradas_1_arg, binder_clnt);
+		    ips=*ipsReintentar;
+		    printf("Se reintentara actualizar con otro servidor\n");
+		    actualizar (nombre,versiones,ips,binder_clnt);
       }
       else{
 	aux=0;
@@ -190,20 +224,31 @@ void actualizar (char* nombre,int* versiones,char* ips,CLIENT *binder_clnt){
 	  archivo = getversion_1(&getversion_1_arg, servidor_actualizados);
 	  if (archivo == (stream_t *) NULL) {
 		clnt_perror (servidor_actualizados, "call failed");
+		printf("Se elimino el server %s ya que esta desactualizado\n",ip);
+		ipborrar=(char*)malloc (17);
+		*ipborrar='\0';
+		strcat (ipborrar,ip);
+		eliminarip_1(&ipborrar, binder_clnt);
+		free (ipborrar);
+		ipsReintentar = getipregistradas_1((void*)&getipregistradas_1_arg, binder_clnt);
+		ips=*ipsReintentar;
+		printf("Se reintentara actualizar con otro servidor.\n");
+		actualizar (nombre,versiones,ips,binder_clnt);
 	  }
-	  
-	  strcat (path,"../archivos/");
-	  strcat(path,nombre);
-	  strcat(path,"-");
-	  sprintf(str, "%d",*(versiones+aux));
-	  strcat(path,str);
-	  strcat(path,".c");
-	  
-	  arch=fopen (path,"w");
-	  fprintf(arch,archivo->stream_t_val);
-	  fclose (arch); 
-	  printf("- Descargada con exito.\n");
-	  aux++;
+	  else{
+	    strcat (path,"../archivos/");
+	    strcat(path,nombre);
+	    strcat(path,"-");
+	    sprintf(str, "%d",*(versiones+aux));
+	    strcat(path,str);
+	    strcat(path,".c");
+	    
+	    arch=fopen (path,"w");
+	    fprintf(arch,archivo->stream_t_val);
+	    fclose (arch); 
+	    printf("- Descargada con exito.\n");
+	    aux++;
+	  }
 	} 
 	free(nombreArchivoCrear);
 	clnt_destroy(servidor_actualizados);
@@ -328,7 +373,8 @@ void IpServerActualizador (char* ip,char* ips,CLIENT *binder_clnt){
   i=0;
   continuar=1;
   posIP=0;
-  iplocal=ip_local();
+  //iplocal=ip_local();
+  iplocal=ip_hamachi();
   while (*(ips+i)!='\0' && continuar){
 	  if (*(ips+i)!='\n'){
 	    ip[posIP]=*(ips+i);
@@ -357,7 +403,7 @@ char *ip_local() {
   char *ip;
   ip =(char*) malloc(17); 
   *ip='\0';
-  strcat(ip,"192.168.0.2\0");
+  strcat(ip,"25.136.48.205\0");
   gethostname(nombre, 255);
   host.sin_addr = * (struct in_addr*) gethostbyname(nombre)->h_addr;
   //ip = inet_ntoa(host.sin_addr);

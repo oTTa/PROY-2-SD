@@ -7,6 +7,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
 //METODOS AUXILIARES
 
 char *ip_local() {
@@ -20,6 +24,26 @@ char *ip_local() {
   host.sin_addr = * (struct in_addr*) gethostbyname(nombre)->h_addr;
   //ip = inet_ntoa(host.sin_addr);
   return ip;
+}
+//utilizado para debug en pruebas remotas
+char* ip_hamachi(){
+   int fd;
+ char* ip;
+ struct ifreq ifr;
+
+ fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+ /* I want to get an IPv4 IP address */
+ ifr.ifr_addr.sa_family = AF_INET;
+
+ /* I want IP address attached to "eth0" */
+ strncpy(ifr.ifr_name, "ham0", IFNAMSIZ-1);
+
+ ioctl(fd, SIOCGIFADDR, &ifr);
+
+ close(fd);
+ ip=inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+ return ip;
 }
 
 int imprimirIPConectada(struct svc_req *rqstp)
@@ -159,90 +183,96 @@ modificararchivo_1_svc(nombreContenido *argp, struct svc_req *rqstp)
 	  result=0;
 	  return &result;
 	}
-	fgets(binderIP,17,Binder);
-	clnt = clnt_create (binderIP, binder, binderv1, "tcp");
-	if (clnt == NULL) {
+	else{
+	    fgets(binderIP,17,Binder);
+	    clnt = clnt_create (binderIP, binder, binderv1, "tcp");
+	    if (clnt == NULL) {
+		    clnt_perror (clnt, "call failed");
+		    result=0;
+		    return &result;
+	    }
+	    //obtenlo la nueva version con la que se creara el archivo
+	    version = getversionaescribir_1(&(argp->nombre), clnt);
+	    
+	    //obtengo las ips para mandar el archivo
+	    ips = getipregistradas_1((void*)&getipregistradas_1_arg, clnt);
+	    if (ips == (char **) NULL) {
 		clnt_perror (clnt, "call failed");
+		printf("imposible obtener las ips de los servidores.");
 		result=0;
 		return &result;
-	}
-	//obtenlo la nueva version con la que se creara el archivo
-	version = getversionaescribir_1(&(argp->nombre), clnt);
-	
-	//obtengo las ips para mandar el archivo
-	ips = getipregistradas_1((void*)&getipregistradas_1_arg, clnt);
-	if (ips == (char **) NULL) {
-	    clnt_perror (clnt, "call failed");
-	    printf("imposible obtener las ips de los servidores.");
-	    result=0;
-	    return &result;
-	}
+	    }
 	
 	
-	//preraro el argumento para enviarlo a los demas servidores
-	escribirversion_1_arg.ver=*version;
-	*(escribirversion_1_arg.nombre)='\0';
-	strcat(escribirversion_1_arg.nombre,argp->nombre);
-	escribirversion_1_arg.file.stream_t_len=strlen(argp->contenido);
-	escribirversion_1_arg.file.stream_t_val=(char*)malloc (sizeof(char)*strlen(argp->contenido));
-	*(escribirversion_1_arg.file.stream_t_val)='\0';
-	strcat(escribirversion_1_arg.file.stream_t_val,argp->contenido);
 	
-	
-	//arma la estructura del path donde se va escribir el archivo
-	strcat(argp->nombre,"-");
-        strcat (path,"../archivos/");
-	strcat(path,argp->nombre);
-	sprintf(str, "%d",*version);
-	strcat(path,str);
-	strcat(path,".c");
-	//escribo el contenido en el archivo 
-	archivoNuevo=fopen (path,"w");
-	fprintf(archivoNuevo,argp->contenido);
-	fclose (archivoNuevo);
-	
-	//envio el archivo a los demas servidores
-	i=0;
-	posIP=0;
-	iplocal=ip_local();
-	while (*(*ips+i)!='\0'){
-	  if (*(*ips+i)!='\n'){
-	    ip[posIP]=*(*ips+i);
-	    posIP++;
-	  }
-	  else{
-	    ip[posIP]='\0';
-	    posIP=0;
-	    if (strcmp(ip,iplocal) != 0){
-	       printf("enviando a:(%s)\n",ip);
-	      server = clnt_create (ip, ServersFile, ServersV1, "tcp");
-	      if (server == NULL) {
-		    clnt_pcreateerror (ip);
-		    printf("\nSe elimino el server %s ya que esta desconectado y el archivo no pudo ser enviado\n",ip);
-		    ipborrar=(char*)malloc (17);
-		    *ipborrar='\0';
-		    strcat (ipborrar,ip);
-		    eliminarip_1(&ipborrar, clnt);
-		    free (ipborrar);
-	      }
-	      else{
-	      result_escribir = escribirversion_1(&escribirversion_1_arg, server);
-	      if (result_escribir == (void *) NULL){
-				  printf("Fallo el envio.\n");		  
-	      }
-	      clnt_destroy (server);
+	  //preraro el argumento para enviarlo a los demas servidores
+	  escribirversion_1_arg.ver=*version;
+	  *(escribirversion_1_arg.nombre)='\0';
+	  strcat(escribirversion_1_arg.nombre,argp->nombre);
+	  escribirversion_1_arg.file.stream_t_len=strlen(argp->contenido);
+	  escribirversion_1_arg.file.stream_t_val=(char*)malloc (sizeof(char)*strlen(argp->contenido));
+	  *(escribirversion_1_arg.file.stream_t_val)='\0';
+	  strcat(escribirversion_1_arg.file.stream_t_val,argp->contenido);
+	  
+	  
+	  //arma la estructura del path donde se va escribir el archivo
+	  strcat(argp->nombre,"-");
+	  strcat (path,"../archivos/");
+	  strcat(path,argp->nombre);
+	  sprintf(str, "%d",*version);
+	  strcat(path,str);
+	  strcat(path,".c");
+	  //escribo el contenido en el archivo 
+	  archivoNuevo=fopen (path,"w");
+	  fprintf(archivoNuevo,argp->contenido);
+	  fclose (archivoNuevo);
+	  
+	  //envio el archivo a los demas servidores
+	  i=0;
+	  posIP=0;
+	  //iplocal=ip_local();
+	  iplocal=ip_hamachi();
+	  while (*(*ips+i)!='\0'){
+	    if (*(*ips+i)!='\n'){
+	      ip[posIP]=*(*ips+i);
+	      posIP++;
+	    }
+	    else{
+	      ip[posIP]='\0';
+	      posIP=0;
+	      if (strcmp(ip,iplocal) != 0){
+		printf("enviando el archivo %s%i a:(%s)\n",argp->nombre,*version,ip);
+		server = clnt_create (ip, ServersFile, ServersV1, "tcp");
+		if (server == NULL) {
+		      clnt_pcreateerror (ip);
+		      printf("\nSe elimino el server %s ya que esta desconectado y el archivo no pudo ser enviado\n",ip);
+		      ipborrar=(char*)malloc (17);
+		      *ipborrar='\0';
+		      strcat (ipborrar,ip);
+		      eliminarip_1(&ipborrar, clnt);
+		      free (ipborrar);
+		}
+		else{
+		result_escribir = escribirversion_1(&escribirversion_1_arg, server);
+		if (result_escribir == (void *) NULL){
+				    printf("Fallo el envio.\n");		  
+		}
+		else
+		  printf("Enviado con exito.");
+		clnt_destroy (server);
+		}
 	      }
 	    }
+	    i++;
 	  }
-	  i++;
-	}
+	  
+	  clnt_destroy (clnt);
+	  
 	
-	clnt_destroy (clnt);
-	free (path);
+        }
+        free (path);
 	free (str);
 	free (nombre);
-	
-	
 	return &result;
 }
 

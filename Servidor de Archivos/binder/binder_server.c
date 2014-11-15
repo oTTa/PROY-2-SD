@@ -116,7 +116,7 @@ eliminarip_1_svc(char **argp, struct svc_req *rqstp)
 	if (encontre==1){
 	  printf("El servidor ");
 	  imprimirIPConectada(rqstp);
-	  printf("elimino al servidor %s\n",*argp);
+	  printf(" elimino al servidor %s\n",*argp);
 	}
 	
 	//dejo todas las ip al principio del arreglo
