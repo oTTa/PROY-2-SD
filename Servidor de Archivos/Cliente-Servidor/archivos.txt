@@ -1,7 +1,12 @@
+asado-0.c
 chau-0.c
+Elefante-0.c
 hola-0.c
 hola-1.c
+LaChota-0.c
+last-0.c
 luca-0.c
 luca-1.c
 rasp-0.c
 tonio-0.c
+tonio-1.c

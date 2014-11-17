@@ -5,7 +5,6 @@
 #include <time.h>
 #include <stdlib.h>
 
-
 char buf[MSG_SIZE];
 void Acciones(char * mensaje);
 char * ingresarMensaje();
@@ -26,6 +25,7 @@ int main(int argc, char **argv)
     int exitoAtaque;
     int gane=1;
     int termino=1;
+    int revancha;
     //controlamos la cantidad de parametros ingresada
     if(argc<3 || argc>3)
     {
@@ -49,24 +49,29 @@ int main(int argc, char **argv)
             mensaje = recibirMsj();
 	    exitoAtaque=*mensaje-'0';
 	    informarAtaque(coordAtaque,exitoAtaque);
+	    printf("\e[1;1H\e[2J");
 	    informarExito (exitoAtaque);
 	    mostrarTableros();
             mensaje = recibirMsj();
 	    coordAtaque=mensajeAcoordenada(mensaje);
+	    printf("\e[1;1H\e[2J");
 	    exitoAtaque=recibirAtaque(coordAtaque);
+	    mostrarTableros();
 	    if (exitoAtaque==3){
 	      gane= verificarGanar();
 	      termino=0;
-	       if (gane==0)
+	       if (gane==0){
 		printf ("EMPATASTE\n");
+		
+	       }
 	      else
-		  printf ("Perdiste\n");  
+		  printf ("PERDISTE\n");  
 	    
 	    }
 	    else
 	      if (!obtenerTotalBarcosEnemigos()){
 		termino=0;
-		printf ("Ganaste\n");
+		printf ("GANASTE\n");
 	      }
 	    buf[0]=(char)(((int)'0')+exitoAtaque);
 	    buf [1]='\0';
@@ -81,7 +86,9 @@ int main(int argc, char **argv)
 	while(termino){
 	    mensaje = recibirMsj();
 	    coordAtaque=mensajeAcoordenada(mensaje);
+	    printf("\e[1;1H\e[2J");
 	    exitoAtaque=recibirAtaque(coordAtaque);
+	    mostrarTableros();
 	    buf[0]=(char)(((int)'0')+exitoAtaque);
 	    buf [1]='\0';
 	    mensaje=buf;
@@ -91,14 +98,19 @@ int main(int argc, char **argv)
             mensaje = recibirMsj();
 	    exitoAtaque=*mensaje-'0';
 	    informarAtaque(coordAtaque,exitoAtaque);
+	     printf("\e[1;1H\e[2J");
 	      if (exitoAtaque==3){
+		
 	      gane= verificarGanar();
 	      termino=0;
 	      if (gane==0)
+		{
 		printf ("EMPATASTE\n");
+		
+	      }
 	      else
 		if (gane<0)
-		  printf ("Ganaste\n");  
+		  printf ("GANASTE\n");  
 	    
 	    }
 	    else
@@ -106,6 +118,7 @@ int main(int argc, char **argv)
 		termino=0;
 		printf ("PERDISTE\n");
 	      }
+	     
 	    informarExito (exitoAtaque);
 	    mostrarTableros();
 	}
@@ -115,11 +128,15 @@ int main(int argc, char **argv)
 }
 
 
-
 char* ingresarCoordenaDeAtaque(coord* coordA)
 {
     printf("\n\n Ingrese la cordenada de ataque:\n");
     *coordA=*ingresarCoordenada();
+    while (!puedoInsertar(coordA->c1,coordA->c2))
+    {
+      printf("Ya ha atacado a esta posición\n");
+       *coordA=*ingresarCoordenada();
+    }
     buf[0]=(char)(((int)'0')+coordA->c1);
     buf[1]='-';
     buf[2]=(char)(((int)'0')+coordA->c2);
@@ -131,6 +148,7 @@ coord* ingresarCoordenada (){
   int fila,columna;
   coord* c=(coord*)malloc(sizeof(coord));
   int validar=0;
+  
   while (!validar){
     printf("[Batalla Naval]$");
     printf("Ingrese la fila(0-9):");
@@ -160,6 +178,7 @@ coord* ingresarCoordenada (){
       else
 	validar=1;
   }
+
   c->c1=fila;
   c->c2=columna;
   return c;
@@ -209,13 +228,14 @@ void insertarBarcoEnTablero (int tamano, int barco){
 }
 
 void CargarTablero (){
-  printf("Se procedera a cargar el tablero:\n\n");
+  
   mostrarTableros();
   //cargamos el barco 1
+  
   insertarBarcoEnTablero(5,1);
   mostrarTableros();
   //cargamos el barco 2
-  /*insertarBarcoEnTablero(4,2);
+  insertarBarcoEnTablero(4,2);
   mostrarTableros();
   //cargamos el barco 3
   insertarBarcoEnTablero(4,3);
@@ -236,7 +256,7 @@ void CargarTablero (){
   insertarBarcoEnTablero(2,8);
   mostrarTableros();
   //cargamos el barco 9
-  insertarBarcoEnTablero(2,9);*/
+  insertarBarcoEnTablero(2,9);
   printf("Todo los  barcos fueron puesto en flota con exito\n");
   mostrarTableros();
 }

@@ -17,12 +17,9 @@ char *ip_local() {
   struct sockaddr_in host;
   char nombre[255];
   char *ip;
-  ip =(char*) malloc(17); 
-  *ip='\0';
-  strcat(ip,"192.168.0.2\0");
   gethostname(nombre, 255);
   host.sin_addr = * (struct in_addr*) gethostbyname(nombre)->h_addr;
-  //ip = inet_ntoa(host.sin_addr);
+  ip = inet_ntoa(host.sin_addr);
   return ip;
 }
 //utilizado para debug en pruebas remotas
@@ -36,7 +33,7 @@ char* ip_hamachi(){
  /* I want to get an IPv4 IP address */
  ifr.ifr_addr.sa_family = AF_INET;
 
- /* I want IP address attached to "eth0" */
+ /* I want IP address attached to "ham0" */
  strncpy(ifr.ifr_name, "ham0", IFNAMSIZ-1);
 
  ioctl(fd, SIOCGIFADDR, &ifr);
@@ -80,7 +77,6 @@ escribirversion_1_svc(argumento *argp, struct svc_req *rqstp)
 	strcat (path,".c");
 	
 	archivoNuevo=fopen (path,"w");
-	printf("%s\n",argp->file.stream_t_val);
 	fprintf(archivoNuevo,argp->file.stream_t_val);
 
 	fclose (archivoNuevo);

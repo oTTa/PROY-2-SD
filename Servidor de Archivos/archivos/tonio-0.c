@@ -1,1 +1,0 @@
-arregla el actualizar

@@ -3,13 +3,14 @@
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
+
 #include "tablero.h"
 
      
 int tableroPropio[10][10];
 int tableroRival [10][10];
-int totalBarcos=5;
-int totalBarcosEnemigos=5;
+int totalBarcos=27;
+int totalBarcosEnemigos=27;
 //Convierte barcos a un tablero completo
 void inicializarTablero()
 {
@@ -21,24 +22,7 @@ void inicializarTablero()
     for(i=0;i<10;i++)
     for(j=0;j<10;j++)
 	tableroRival[i][j]=-1;
-  /*for(i=0;i<5;i++)
-    tableroPropio[((barco->b1)[i]).c1][((barco->b1)[i]).c2]=1;
-  for(i=0;i<4;i++)
-    tableroPropio[(barco->b2)[i].c1][(barco->b2)[i].c2]=2;
-  for(i=0;i<4;i++)
-    tableroPropio[(barco->b3)[i].c1][(barco->b3)[i].c2]=3;
-  for(i=0;i<3;i++)
-    tableroPropio[(barco->b4)[i].c1][(barco->b4)[i].c2]=4;
-  for(i=0;i<3;i++)
-    tableroPropio[(barco->b5)[i].c1][(barco->b5)[i].c2]=5;
-  for(i=0;i<2;i++)
-    tableroPropio[(barco->b6)[i].c1][(barco->b6)[i].c2]=6;
-  for(i=0;i<2;i++)
-    tableroPropio[(barco->b7)[i].c1][(barco->b7)[i].c2]=7;
-  for(i=0;i<2;i++)
-    tableroPropio[(barco->b8)[i].c1][(barco->b8)[i].c2]=8;
-  for(i=0;i<2;i++)
-    tableroPropio[(barco->b9)[i].c1][(barco->b9)[i].c2]=9;*/
+  
 }
 int insertarBarco(coord* c,int orientacion, int barco)
 {
@@ -113,7 +97,9 @@ void mostrarTableros(){
 		for (j=0; j<10; j++){ 
 			
 			if(tableroPropio[i][j]==0){
-			printf(" 0 ");}
+			printf("   ");}
+			else if (tableroPropio[i][j]==10){
+			  printf(" x ");}
 			else {
 			printf(" %i ",tableroPropio[i][j]);}
 			printf("|");
@@ -138,6 +124,7 @@ void mostrarTableros(){
 
 int recibirAtaque(coord *c)
 {
+  printf("Te atacaron en (%i ,%i)\n",c->c1,c->c2);
   int n;
   int respuesta;
   if (tableroPropio[c->c1][c->c2]==0)
@@ -146,7 +133,7 @@ int recibirAtaque(coord *c)
   {
     totalBarcos--;
     n=tableroPropio[c->c1][c->c2];
-    tableroPropio[c->c1][c->c2]=0;
+    
     if (totalBarcos>0)
     {
       int i;
@@ -175,6 +162,7 @@ int recibirAtaque(coord *c)
     }
     else respuesta=3;
   }
+  tableroPropio[c->c1][c->c2]=10;
   return respuesta;
 }
 
@@ -191,4 +179,8 @@ void informarAtaque(coord *c, int exito)
 int obtenerTotalBarcosEnemigos (){ return totalBarcosEnemigos; }
 
 int obtenerTotalBarcos (){ return totalBarcos; }
+
+int puedoInsertar(int x, int y){
+  return (tableroRival[x][y]==-1);
+}
 

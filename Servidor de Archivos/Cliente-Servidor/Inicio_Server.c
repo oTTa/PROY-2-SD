@@ -145,6 +145,7 @@ void inicioServer (char *binderIP){
 				  printf("Imposible registrarse en el binder\n");
 				  clnt_perror (binder_clnt, "call failed");
 	  }
+	  printf("Me registre en el binder con la ip (%s)\n",iplocal);
 	  clnt_destroy(binder_clnt);
 	  printf("++++++++++++ Servidor listo para recibir peticiones ++++++++++\n\n");
 	  execv("./Servidor_server", NULL);
@@ -401,12 +402,9 @@ char *ip_local() {
   struct sockaddr_in host;
   char nombre[255];
   char *ip;
-  ip =(char*) malloc(17); 
-  *ip='\0';
-  strcat(ip,"25.136.48.205\0");
   gethostname(nombre, 255);
   host.sin_addr = * (struct in_addr*) gethostbyname(nombre)->h_addr;
-  //ip = inet_ntoa(host.sin_addr);
+  ip = inet_ntoa(host.sin_addr);
   return ip;
 }
 
